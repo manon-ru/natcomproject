@@ -1,0 +1,13 @@
+[project]
+name = "natcomproject"
+version = "0.1.0"
+description = "Comparing GA, PSO, and ACO for pathfinding in 2D mazes (Group 27)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "matplotlib",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
