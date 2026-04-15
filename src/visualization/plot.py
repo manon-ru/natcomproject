@@ -10,51 +10,63 @@ def visualize_maze(
     path: list[tuple] | None = None,
     title: str = "Maze",
     show: bool = True,
+    max_dim: int = 10  # Cap the largest dimension at 10 inches
 ) -> plt.Figure:
     """
-    Render a wall-based MazeEnvironment using line segments.
-
-    Args:
-        maze:  The MazeEnvironment to draw.
-        path:  Optional list of (x, y) cells to overlay as the solution path.
-        title: Plot title.
-        show:  If True, call plt.show(). Set to False when saving to file.
-
-    Returns:
-        The matplotlib Figure object.
+    Render a wall-based MazeEnvironment with adaptive scaling for large grids.
     """
-    fig, ax = plt.subplots(figsize=(max(6, maze.width), max(6, maze.height)))
+    # 1. Calculate adaptive figsize based on aspect ratio
+    aspect_ratio = maze.width / maze.height
+    if aspect_ratio > 1:
+        fig_width = max_dim
+        fig_height = max_dim / aspect_ratio
+    else:
+        fig_height = max_dim
+        fig_width = max_dim * aspect_ratio
+    
+    # Ensure it's not too tiny
+    fig, ax = plt.subplots(figsize=(max(5, fig_width), max(5, fig_height)))
 
-    # Draw horizontal walls (top/bottom edges of cells)
+    # 2. Adaptive styling: shrink lines and text as the maze grows
+    # A 5x5 needs big lines; a 50x50 needs thin ones.
+    base_scale = 10 / max(maze.width, maze.height)
+    line_weight = max(1, 3 * base_scale)
+    font_size = max(8, 14 * base_scale)
+
+    # Draw horizontal walls
     for y in range(maze.height + 1):
         for x in range(maze.width):
             if maze.horizontal_walls[y, x]:
-                ax.plot([x - 0.5, x + 0.5], [y - 0.5, y - 0.5], color="black", lw=2)
+                ax.plot([x - 0.5, x + 0.5], [y - 0.5, y - 0.5], color="black", lw=line_weight)
 
-    # Draw vertical walls (left/right edges of cells)
+    # Draw vertical walls
     for y in range(maze.height):
         for x in range(maze.width + 1):
             if maze.vertical_walls[y, x]:
-                ax.plot([x - 0.5, x - 0.5], [y - 0.5, y + 0.5], color="black", lw=2)
+                ax.plot([x - 0.5, x - 0.5], [y - 0.5, y + 0.5], color="black", lw=line_weight)
 
     # Overlay solution path
     if path and len(path) > 1:
         xs = [p[0] for p in path]
         ys = [p[1] for p in path]
-        ax.plot(xs, ys, color="royalblue", lw=2, alpha=0.7, zorder=2)
+        ax.plot(xs, ys, color="royalblue", lw=line_weight * 1.5, alpha=0.7, zorder=2)
 
-    # Start and goal markers
+    # Start and goal markers with adaptive font size
     sx, sy = maze.start
     gx, gy = maze.goal
-    ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center", fontsize=14, zorder=3)
-    ax.text(gx, gy, "G", color="red", weight="bold", ha="center", va="center", fontsize=14, zorder=3)
+    ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center", 
+            fontsize=font_size, zorder=3)
+    ax.text(gx, gy, "G", color="red", weight="bold", ha="center", va="center", 
+            fontsize=font_size, zorder=3)
 
     ax.set_aspect("equal")
     ax.set_xlim(-0.5, maze.width - 0.5)
-    ax.set_ylim(maze.height - 0.5, -0.5)  # Flip y so (0,0) is top-left
+    ax.set_ylim(maze.height - 0.5, -0.5)
     ax.axis("off")
-    ax.set_title(title)
+    ax.set_title(title, fontsize=12)
 
+    plt.tight_layout() # Ensures the title and labels fit in the saved image
+    
     if show:
         plt.show()
 
