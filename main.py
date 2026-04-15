@@ -36,7 +36,7 @@ from visualization.plot import visualize_maze, visualize_entropy
 TIERS = [
     # {"name": "Simple",  "width": 5,  "height": 5,  "seed": 2026},
     {"name": "Medium",  "width": 10, "height": 10, "seed": 2026},
-    {"name": "Complex", "width": 50, "height": 50, "seed": 2026},
+    {"name": "Complex", "width": 100, "height": 100, "seed": 2026},
 ]
 
 # Number of independent trials per algorithm per tier (proposal: 50)
@@ -93,12 +93,36 @@ def print_summary(tier_name: str, algo_name: str, results: list[dict], maze, ent
     print(f"    Path optimality:    {mean_opt:.3f}" if mean_opt is not None else "    Path optimality:    N/A")
     print(f"    Diversity loss/10i: {dlr:.4f}" if dlr is not None else "    Diversity loss/10i: N/A")
     print()
+    
+def run_trials(AlgorithmClass, maze, num_trials: int, max_iterations: int, **kwargs) -> tuple[list[dict], list[float]]:
+    results = []
+    entropy_history = []
 
+    for _ in range(num_trials):
+        algo = AlgorithmClass(maze, **kwargs)
+        # Gebruik hier de variabele max_iterations in plaats van een hardcoded waarde
+        result = algo.run(max_iterations=max_iterations)
+        results.append(result)
+        
+        if hasattr(algo, "entropy_history"):
+            entropy_history = algo.entropy_history
+
+    return results, entropy_history
 
 def main() -> None:
+    # --- Experiment Instellingen ---
+    LIMIT_MULTIPLIER = 3  
+    
     for tier in TIERS:
         print(f"=== Tier: {tier['name']} ({tier['width']}x{tier['height']}, seed={tier['seed']}) ===")
         maze = generate_maze(tier["width"], tier["height"], seed=tier["seed"])
+
+        # 1. Bepaal de theoretische ondergrens (Ground Truth)
+        optimal_len = shortest_path_length(maze)
+        dynamic_limit = int(optimal_len * LIMIT_MULTIPLIER)
+        
+        print(f"Optimal path: {optimal_len} steps | Max iterations: {dynamic_limit}")
+        print("-" * 50)
 
         entropy_histories: dict[str, list[float]] = {}
 
@@ -111,7 +135,15 @@ def main() -> None:
         ]
 
         for algo_name, AlgoClass, kwargs in algorithms:
-            results, entropy_history = run_trials(AlgoClass, maze, NUM_TRIALS, **kwargs)
+            # Geef de dynamische limiet door aan run_trials
+            results, entropy_history = run_trials(
+                AlgoClass, 
+                maze, 
+                NUM_TRIALS, 
+                max_iterations=dynamic_limit, 
+                **kwargs
+            )
+            
             entropy_histories[algo_name] = entropy_history
             print_summary(tier["name"], algo_name, results, maze, entropy_history)
             
@@ -124,13 +156,10 @@ def main() -> None:
                 path = r["path"]
                 if not path: continue
                 
-                # Bereken afstand tot doel (Manhattan distance)
                 last_pos = path[-1]
                 dist = abs(last_pos[0] - maze.goal[0]) + abs(last_pos[1] - maze.goal[1])
                 
-                # Update best_path: 
-                # 1. Als dit de kleinste afstand tot het doel is
-                # 2. Of als de afstand gelijk is (bijv. beiden succes), neem de kortste route
+                # Succes krijgt voorrang (dist 0), daarna kortste pad
                 if dist < best_dist:
                     best_dist = dist
                     best_len = len(path)
@@ -139,7 +168,7 @@ def main() -> None:
                     best_len = len(path)
                     best_path_for_algo = path
 
-            # Visualiseer de beste poging van dit specifieke algoritme
+            # Visualiseer resultaat
             status = "SUCCESS" if best_dist == 0 else f"FAILED (dist={best_dist})"
             visualize_maze(
                 maze, 
@@ -147,14 +176,6 @@ def main() -> None:
                 title=f"{algo_name} [{status}] - {tier['name']}", 
                 show=True
             )
-
-        # Optioneel: toon de entropy na alle algoritmes in deze tier
-        # if any(entropy_histories.values()):
-        #     visualize_entropy(
-        #         entropy_histories,
-        #         title=f"Population Diversity — {tier['name']} Maze",
-        #         show=True,
-        #     )
 
         print()
 
