@@ -17,12 +17,13 @@ class MazeEnvironment:
     def __init__(self, width: int, height: int, start: tuple, goal: tuple):
         self.width = width
         self.height = height
-        self.start = start  # (x, y)
-        self.goal = goal    # (x, y)
-
-        # All walls present by default (True = wall exists)
+        self.start = start
+        self.goal = goal
         self.horizontal_walls = np.ones((height + 1, width), dtype=bool)
         self.vertical_walls = np.ones((height, width + 1), dtype=bool)
+        
+        # NEW: Store the dynamic wall coordinates
+        self.dynamic_wall = None 
 
     def remove_wall(self, c1: tuple, c2: tuple) -> None:
         """Remove the wall between two adjacent cells."""

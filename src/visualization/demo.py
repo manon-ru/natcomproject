@@ -28,9 +28,9 @@ from maze.environment import MazeEnvironment
 # Maze tiers
 # ---------------------------------------------------------------------------
 TIERS = [
-    {"name": "Simple",  "width": 5,  "height": 5,  "seed": 2026},
-    {"name": "Medium",  "width": 10, "height": 10, "seed": 2026},
-    {"name": "Complex", "width": 20, "height": 20, "seed": 2026},
+    {"name": "Maze 1: U-Trap", "width": 20, "height": 20, "seed": 2026, "maze_type": "U-Trap"},
+    {"name": "Maze 2: Sudden Wall", "width": 20, "height": 20, "seed": 2026, "maze_type": "Sudden Wall"},
+    {"name": "Maze 3: Parallel Paths", "width": 20, "height": 20, "seed": 2026, "maze_type": "Parallel Paths"},
 ]
 
 ALGO_NAMES = ["Baseline GA", "GA", "PSO", "ACO"]
@@ -233,7 +233,9 @@ def show_demo() -> None:
     """Generate all three maze tiers and show the visualization demo."""
     mazes = []
     for tier in TIERS:
-        maze = generate_maze(tier["width"], tier["height"], seed=tier["seed"])
+        # Extract the maze_type, defaulting to "Random" if not found
+        m_type = tier.get("maze_type", "Random")
+        maze = generate_maze(tier["width"], tier["height"], seed=tier["seed"], maze_type=m_type)
         path = maze.shortest_path()
         mazes.append((tier, maze, path))
 

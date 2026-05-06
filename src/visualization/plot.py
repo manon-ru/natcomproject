@@ -4,18 +4,17 @@ import numpy as np
 
 from maze.environment import MazeEnvironment
 
-
 def visualize_maze(
     maze: MazeEnvironment,
     path: list[tuple] | None = None,
+    all_paths: list[list[tuple]] | None = None,  # NEW PARAMETER
     title: str = "Maze",
     show: bool = True,
-    max_dim: int = 10  # Cap the largest dimension at 10 inches
+    max_dim: int = 10
 ) -> plt.Figure:
     """
     Render a wall-based MazeEnvironment with adaptive scaling for large grids.
     """
-    # 1. Calculate adaptive figsize based on aspect ratio
     aspect_ratio = maze.width / maze.height
     if aspect_ratio > 1:
         fig_width = max_dim
@@ -24,11 +23,8 @@ def visualize_maze(
         fig_height = max_dim
         fig_width = max_dim * aspect_ratio
     
-    # Ensure it's not too tiny
     fig, ax = plt.subplots(figsize=(max(5, fig_width), max(5, fig_height)))
 
-    # 2. Adaptive styling: shrink lines and text as the maze grows
-    # A 5x5 needs big lines; a 50x50 needs thin ones.
     base_scale = 10 / max(maze.width, maze.height)
     line_weight = max(1, 3 * base_scale)
     font_size = max(8, 14 * base_scale)
@@ -45,18 +41,27 @@ def visualize_maze(
             if maze.vertical_walls[y, x]:
                 ax.plot([x - 0.5, x - 0.5], [y - 0.5, y + 0.5], color="black", lw=line_weight)
 
-    # Overlay solution path
+    # --- NEW: Overlay ALL explored paths as a faint heatmap ---
+    if all_paths:
+        for p in all_paths:
+            if p and len(p) > 1:
+                xs = [node[0] for node in p]
+                ys = [node[1] for node in p]
+                # Low alpha makes overlapping paths darker
+                ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
+
+    # Overlay the BEST solution path in red so it stands out
     if path and len(path) > 1:
         xs = [p[0] for p in path]
         ys = [p[1] for p in path]
-        ax.plot(xs, ys, color="royalblue", lw=line_weight * 1.5, alpha=0.7, zorder=2)
+        ax.plot(xs, ys, color="red", lw=line_weight * 1.5, alpha=0.9, zorder=2)
 
-    # Start and goal markers with adaptive font size
+    # Start and goal markers
     sx, sy = maze.start
     gx, gy = maze.goal
     ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center", 
             fontsize=font_size, zorder=3)
-    ax.text(gx, gy, "G", color="red", weight="bold", ha="center", va="center", 
+    ax.text(gx, gy, "G", color="darkred", weight="bold", ha="center", va="center", 
             fontsize=font_size, zorder=3)
 
     ax.set_aspect("equal")
@@ -65,7 +70,7 @@ def visualize_maze(
     ax.axis("off")
     ax.set_title(title, fontsize=12)
 
-    plt.tight_layout() # Ensures the title and labels fit in the saved image
+    plt.tight_layout()
     
     if show:
         plt.show()
