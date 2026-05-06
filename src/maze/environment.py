@@ -33,6 +33,15 @@ class MazeEnvironment:
         elif y1 == y2:  # Moving horizontally -> remove vertical wall
             self.vertical_walls[y1, max(x1, x2)] = False
 
+    def add_wall(self, c1: tuple, c2: tuple) -> None:
+        """Add a wall between two adjacent cells."""
+        x1, y1 = c1
+        x2, y2 = c2
+        if x1 == x2:
+            self.horizontal_walls[max(y1, y2), x1] = True
+        elif y1 == y2:
+            self.vertical_walls[y1, max(x1, x2)] = True
+
     def has_wall_between(self, c1: tuple, c2: tuple) -> bool:
         """Return True if there is a wall blocking passage between two adjacent cells."""
         x1, y1 = c1
