@@ -20,64 +20,71 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
         _generate_dfs(maze, 0, width, 0, height)
         
     elif maze_type == "U-Trap":
-        # MAZE 1: U-Trap
+        # MAZE 1: U-Trap (Deception)
         mid_y = height // 2
         
-        # Stap 1: Bovenste helft wordt de extreem complexe, lange omweg
+        # Step 1: Generate two completely isolated halves
+        # Top half (The True Path)
         _generate_dfs(maze, 0, width, 0, mid_y)
+        # Bottom half (The Trap)
+        _generate_dfs(maze, 0, width, mid_y, height)
+
+        # Step 2: Hermetically seal the border between the two halves
+        for x in range(width):
+            maze.horizontal_walls[mid_y, x] = True
+
+        # Step 3: Connect Start (0, mid_y) to the True Path (top half)
+        # The agent must go UP to actually solve the maze.
+        maze.remove_wall((0, mid_y), (0, mid_y - 1))
+
+        # Step 4: Isolate the Goal (width - 1, mid_y) from the Trap
+        # We build solid walls on the left and bottom of the goal cell.
+        maze.add_wall((width - 1, mid_y), (width - 2, mid_y))
+        if mid_y + 1 < height:
+            maze.add_wall((width - 1, mid_y), (width - 1, mid_y + 1))
         
-        # Stap 2: Onderste helft wordt het misleidende doolhof richting de val
-        _generate_dfs(maze, 0, width - 2, mid_y, height)
+        # Step 5: Connect Goal to the True Path (top half)
+        # The agent must drop down from the top half to finish.
+        maze.remove_wall((width - 1, mid_y), (width - 1, mid_y - 1))
 
-        # Stap 3: Bouw de letterlijke 3x3 cirkel (de val) aan de rechterkant
-        cx, cy = width - 4, mid_y + 1
-        ring = [(cx-1, cy-1), (cx, cy-1), (cx+1, cy-1),
-                (cx+1, cy), (cx+1, cy+1), (cx, cy+1),
-                (cx-1, cy+1), (cx-1, cy)]
-        for i in range(8):
-            maze.remove_wall(ring[i], ring[(i+1)%8])
-
-        # Stap 4: Sluit de Goal hermetisch af van de onderste helft!
-        # Mieren MOGEN de goal niet bereiken vanuit de val.
-        maze.vertical_walls[mid_y, width - 2] = True
-        maze.vertical_walls[mid_y+1, width - 2] = True
-        maze.horizontal_walls[mid_y, width - 1] = True
-
-        # Stap 5: Verbind Start met beide werelden
-        maze.remove_wall(start, (0, mid_y - 1)) # Naar de lange omweg
-        maze.remove_wall(start, (0, mid_y + 1)) # Naar de val/cirkel
-
-        # Stap 6: Verbind de lange omweg (bovenlangs) met de Goal
-        maze.remove_wall((width - 1, mid_y - 1), goal)
+        # Step 6: Create the ultimate deceptive corridor
+        # We clear a straight line from Start directly toward the Goal.
+        # This forces the heuristic distance to decrease smoothly to 1,
+        # but the agent will hit the wall we built in Step 4.
+        for x in range(width - 2):
+            maze.remove_wall((x, mid_y), (x + 1, mid_y))
 
     elif maze_type == "Sudden Wall":
-        # MAZE 2: KORT VS LANG (Beide zijn nu 100% complexe doolhoven!)
+        # MAZE 2: Sudden Wall (Dynamic Adaptability)
         mid_x = width // 2
+        start = (mid_x, 0)
+        goal = (mid_x, height - 1)
+        maze.start = start
+        maze.goal = goal
         
-        # Sector 1 (Kort): Een smalle, maar extreem kronkelige corridor in het midden
-        _generate_dfs(maze, mid_x - 2, mid_x + 2, 1, height - 1)
+        # Step 1: Generate DFS background noise
+        _generate_dfs(maze, 0, width, 0, height)
         
-        # Sector 2 (Lang): Een gigantisch, kronkelig doolhof op rechts
-        _generate_dfs(maze, mid_x + 2, width, 1, height - 1)
-        
-        # (Visuele opvulling voor links, zodat het niet leeg is)
-        _generate_dfs(maze, 0, mid_x - 2, 1, height - 1)
-
-        # Isoleer de gebieden luchtdicht van elkaar
-        for y in range(height):
-            maze.vertical_walls[y, mid_x + 2] = True
-            maze.vertical_walls[y, mid_x - 2] = True
-
-        # Verbind Start/Goal met het korte pad
-        maze.remove_wall(start, (mid_x, 1))
-        maze.remove_wall(goal, (mid_x, height - 2))
-
-        # Verbind Start/Goal met het lange pad via de randen
-        for x in range(mid_x, mid_x + 3):
-            maze.remove_wall((x, 0), (x+1, 0))
-            maze.remove_wall((x, height-1), (x+1, height-1))
-        maze.remove_wall((mid_x + 3, 0), (mid_x + 3, 1))
-        maze.remove_wall((mid_x + 3, height - 1), (mid_x + 3, height - 2))
+        # Step 2: Carve the Short Path (Straight down the middle)
+        for y in range(height - 1):
+            maze.remove_wall((mid_x, y), (mid_x, y + 1))
+            # Seal the left and right sides so agents don't wander off the highway
+            if y > 0 and y < height - 1:
+                maze.vertical_walls[y, mid_x] = True
+                maze.vertical_walls[y, mid_x + 1] = True
+            
+        # Step 3: Carve the Long Path (Around the left perimeter)
+        # Connect start to the far left wall
+        for x in range(1, mid_x + 1):
+            maze.remove_wall((x, 0), (x - 1, 0))
+            maze.remove_wall((x, height - 1), (x - 1, height - 1))
+        # Clear the far left column
+        for y in range(height - 1):
+            maze.remove_wall((0, y), (0, y + 1))
+            
+        # Step 4: Define the Disruption
+        # This specifies the exact wall that will be ADDED during the simulation
+        maze.dynamic_wall = ((mid_x, height // 2), (mid_x, (height // 2) + 1))
 
     elif maze_type == "Parallel Paths":
         # MAZE 3: 100% GESPIEGELD + EEN GEGARANDEERDE DETOUR

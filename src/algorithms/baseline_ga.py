@@ -55,16 +55,45 @@ class BaselineGA:
         # in the current cell until the end of the simulation.
         return path
 
-    def run(self, max_iterations: int = 1000) -> dict:
+    def run(self, max_iterations: int = 1000, disruption_length: int = -1) -> dict:
         individual = self._initialize_individual()
+        snapshot_path = None
+        wall_dropped = False
+        disruption_iteration = None # NEW: Track the exact iteration
 
         for iteration in range(max_iterations):
+            
+            # --- SPATIAL DISRUPTION LOGIC ---
+            if not wall_dropped and disruption_length > 0 and len(individual) >= disruption_length:
+                if hasattr(self.maze, 'dynamic_wall') and self.maze.dynamic_wall:
+                    wall_dropped = True
+                    snapshot_path = list(individual)
+                    disruption_iteration = iteration # NEW: Save the iteration
+                    
+                    w1, w2 = self.maze.dynamic_wall
+                    self.maze.add_wall(w1, w2)
+                    
+                    for i in range(len(individual) - 1):
+                        if (individual[i] == w1 and individual[i+1] == w2) or \
+                           (individual[i] == w2 and individual[i+1] == w1):
+                            individual = individual[:i+1]
+                            self.visited = set(individual) 
+                            break
+
             individual = self._mutate(individual)
 
             if iteration % 10 == 0:
                 self.entropy_history.append(calculate_shannon_entropy([individual[-1]]))
 
             if individual[-1] == self.maze.goal:
-                return {"success": True, "iterations": iteration + 1, "path": individual}
+                return {
+                    "success": True, "iterations": iteration + 1, 
+                    "path": individual, "snapshot": snapshot_path, 
+                    "disruption_iteration": disruption_iteration
+                }
 
-        return {"success": False, "iterations": max_iterations, "path": individual}
+        return {
+            "success": False, "iterations": max_iterations, 
+            "path": individual, "snapshot": snapshot_path, 
+            "disruption_iteration": disruption_iteration
+        }
