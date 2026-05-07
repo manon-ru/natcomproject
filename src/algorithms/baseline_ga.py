@@ -14,7 +14,7 @@ class BaselineGA:
         self.visited = set([self.maze.start])
         self.full_history = [self.maze.start]
 
-    def _initialize_individual(self) -> list[tuple]:
+    def initialize_individual(self) -> list[tuple]:
         return [self.maze.start]
 
     def _mutate(self, path: list[tuple]) -> list[tuple]:
@@ -50,7 +50,7 @@ class BaselineGA:
         return path
 
     def run(self, max_iterations: int = 1000, disruption_length: int = -1) -> dict:
-        individual = self._initialize_individual()
+        individual = self.initialize_individual()
         snapshot_path = None
         wall_dropped = False
         disruption_iteration = None
