@@ -41,13 +41,11 @@ def visualize_maze(
             if maze.vertical_walls[y, x]:
                 ax.plot([x - 0.5, x - 0.5], [y - 0.5, y + 0.5], color="black", lw=line_weight)
 
-    # --- NEW: Overlay ALL explored paths as a faint heatmap ---
     if all_paths:
-        for p in all_paths:
-            if p and len(p) > 1:
-                xs = [node[0] for node in p]
-                ys = [node[1] for node in p]
-                # Low alpha makes overlapping paths darker
+        for history_list in all_paths:
+            if history_list and len(history_list) > 1:
+                xs = [node[0] for node in history_list]
+                ys = [node[1] for node in history_list]
                 ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
 
     # Overlay the BEST solution path in red so it stands out
