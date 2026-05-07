@@ -57,33 +57,31 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
     elif maze_type == "Sudden Wall":
         # MAZE 2: Sudden Wall (Dynamic Adaptability)
         mid_x = width // 2
-        start = (mid_x, 0)
-        goal = (mid_x, height - 1)
-        maze.start = start
-        maze.goal = goal
+        start, goal = (mid_x, 0), (mid_x, height - 1)
+        maze.start, maze.goal = start, goal
         
-        # Step 1: Generate DFS background noise
-        _generate_dfs(maze, 0, width, 0, height)
+        # Step 1: Generate distinct random mazes for both wings
+        # Left Wing (0 to mid_x-1) and Right Wing (mid_x+1 to width-1)
+        _generate_dfs(maze, 0, mid_x, 0, height)
+        _generate_dfs(maze, mid_x + 1, width, 0, height)
         
-        # Step 2: Carve the Short Path (Straight down the middle)
+        # Step 2: Carve the Short Path (The Central Highway)
         for y in range(height - 1):
             maze.remove_wall((mid_x, y), (mid_x, y + 1))
-            # Seal the left and right sides so agents don't wander off the highway
-            if y > 0 and y < height - 1:
+            # Seal the highway walls so agents stay in the tube initially
+            if 0 < y < height - 1:
                 maze.vertical_walls[y, mid_x] = True
                 maze.vertical_walls[y, mid_x + 1] = True
             
-        # Step 3: Carve the Long Path (Around the left perimeter)
-        # Connect start to the far left wall
-        for x in range(1, mid_x + 1):
-            maze.remove_wall((x, 0), (x - 1, 0))
-            maze.remove_wall((x, height - 1), (x - 1, height - 1))
-        # Clear the far left column
-        for y in range(height - 1):
-            maze.remove_wall((0, y), (0, y + 1))
+        # Step 3: Open "Valves" to both wings
+        # We connect the start/goal area to BOTH the left and right sectors
+        for side_x in [mid_x - 1, mid_x + 1]:
+            # Connect top (near Start)
+            maze.remove_wall((mid_x, 0), (side_x, 0))
+            # Connect bottom (near Goal)
+            maze.remove_wall((mid_x, height - 1), (side_x, height - 1))
             
-        # Step 4: Define the Disruption
-        # This specifies the exact wall that will be ADDED during the simulation
+        # Step 4: Define the Disruption (Exactly in the middle of the highway)
         maze.dynamic_wall = ((mid_x, height // 2), (mid_x, (height // 2) + 1))
 
     elif maze_type == "Parallel Paths":
