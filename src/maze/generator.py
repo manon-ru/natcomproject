@@ -1,4 +1,5 @@
 import random
+from turtle import width
 import numpy as np
 from maze.environment import MazeEnvironment
 
@@ -85,14 +86,14 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
         maze.dynamic_wall = ((mid_x, height // 2), (mid_x, (height // 2) + 1))
 
     elif maze_type == "Parallel Paths":
-        # MAZE 3: 100% GESPIEGELD + EEN GEGARANDEERDE DETOUR
+        # Maze 3: Parallel Paths + small detour at the end
         mid_x = width // 2
-        
-        # Stap 1: Vul de linkerhelft met een zwaar doolhof
-        _generate_dfs(maze, 0, mid_x, 1, height - 1)
 
-        # Stap 2: Spiegel MUUR VOOR MUUR naar de rechterhelft
-        for y in range(1, height - 1):
+        # Step 1: generate DFS background noise on the left half (True Path)
+        _generate_dfs(maze, 0, mid_x, 1, height - 2)
+
+        # Step 2: Mirror walls to the right half
+        for y in range(1, height - 2):
             for x in range(mid_x):
                 rx = width - 1 - x
                 maze.horizontal_walls[y, rx] = maze.horizontal_walls[y, x]
@@ -100,55 +101,58 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
                 maze.vertical_walls[y, rx+1] = maze.vertical_walls[y, x]
                 maze.vertical_walls[y, rx] = maze.vertical_walls[y, x+1]
 
-        # Stap 3: Scheid de helften luchtdicht in het midden, 
-        # MAAR laat y=0 (start) en y=height-1 (goal) met rust!
+        # Step 3: close the middle corridor to create two parallel paths
         for y in range(1, height - 1):
             maze.vertical_walls[y, mid_x] = True
             maze.vertical_walls[y, mid_x + 1] = True # Zorg dat de mid-kolom echt dicht is
 
-        # Stap 4: Verbind Start en Goal aan beide helften
-        # (Dit doen we PAS HIERNA, zodat we onze eigen deuren niet meer dichtgooien)
-        maze.remove_wall(start, (mid_x - 1, 0)) # Deur naar links
-        maze.remove_wall(start, (mid_x + 1, 0)) # Deur naar rechts
-        maze.remove_wall((mid_x - 1, 0), (mid_x - 1, 1)) # Gangetje naar linker doolhof
-        maze.remove_wall((mid_x + 1, 0), (mid_x + 1, 1)) # Gangetje naar rechter doolhof
+        # Step 4: Connect Start to both halves (Entrance)
+        maze.remove_wall(start, (mid_x - 1, 0)) # Door to the left
+        maze.remove_wall(start, (mid_x + 1, 0)) # Door to the right
+        maze.remove_wall((mid_x - 1, 0), (mid_x - 1, 1)) # Corridor to the left maze
+        maze.remove_wall((mid_x + 1, 0), (mid_x + 1, 1)) # Corridor to the right maze
 
-        maze.remove_wall(goal, (mid_x - 1, height - 1))
-        maze.remove_wall(goal, (mid_x + 1, height - 1))
-        maze.remove_wall((mid_x - 1, height - 1), (mid_x - 1, height - 2))
-        maze.remove_wall((mid_x + 1, height - 1), (mid_x + 1, height - 2))
+        # Step 5: THE GEARDED DETOUR AT THE END
+        # Left exit: Straight and efficient (3 steps to the goal)
+        maze.remove_wall((mid_x - 1, height - 3), (mid_x - 1, height - 2))
+        maze.remove_wall((mid_x - 1, height - 2), (mid_x - 1, height - 1))
+        maze.remove_wall((mid_x - 1, height - 1), goal)
 
-        # Stap 5: DE GEGARANDEERDE DETOUR
-        # We gebruiken BFS om de exacte route op rechts te vinden, en breken hem af!
-        path = _find_shortest_path(maze, (mid_x + 1, 1), (mid_x + 1, height - 2))
-        if path and len(path) > 4:
-            # Pak een coördinaat precies in het midden van de route
-            idx = len(path) // 2
-            px, py = path[idx]
-            nx, ny = path[idx + 1]
+        # Right exit: The small detour! (Exactly 5 steps to the goal)
+        maze.remove_wall((mid_x + 1, height - 3), (mid_x + 1, height - 2))
+        maze.remove_wall((mid_x + 1, height - 2), (mid_x + 2, height - 2))
+        maze.remove_wall((mid_x + 2, height - 2), (mid_x + 2, height - 1))
+        maze.remove_wall((mid_x + 2, height - 1), (mid_x + 1, height - 1))
+        maze.remove_wall((mid_x + 1, height - 1), goal)
+        
+        # Close the middle corridor all the way down
+        maze.horizontal_walls[height - 1, mid_x + 1] = True 
 
-            # Zet de muur TERUG op de hoofdroute om hem te blokkeren
-            if px == nx: maze.horizontal_walls[max(py, ny), px] = True
-            if py == ny: maze.vertical_walls[py, max(px, nx)] = True
-
-            # Graaf een dwingende u-bocht om de nieuwe muur heen
-            if px == nx: # Route ging verticaal
-                dx = 1 if px < width - 1 else -1
-                maze.remove_wall((px, py), (px + dx, py))
-                maze.remove_wall((px + dx, py), (px + dx, ny))
-                maze.remove_wall((px + dx, ny), (nx, ny))
-            else: # Route ging horizontaal
-                dy = 1 if py < height - 1 else -1
-                maze.remove_wall((px, py), (px, py + dy))
-                maze.remove_wall((px, py + dy), (nx, py + dy))
-                maze.remove_wall((nx, py + dy), (nx, ny))
+        # Step 6: Add some random walls in the bottom row to create dead-ends and force decision-making
+        for _ in range(4): # Add 4 random walls in the bottom row
+            for y in range(height - 2, height):
+                for x in range(width):
+                    # We only add walls in the bottom row, and we avoid blocking the direct paths to the goal
+                    if maze.horizontal_walls[y, x] and maze.horizontal_walls[y+1, x] and maze.vertical_walls[y, x] and maze.vertical_walls[y, x+1]:
+                        neighbors = []
+                        for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+                            nx, ny = x + dx, y + dy
+                            # Check if the neighbor is within bounds and not on the middle corridor
+                            if maze.in_bounds(nx, ny) and not (x < mid_x and nx >= mid_x) and not (x > mid_x and nx <= mid_x):
+                                # Check if there's currently a wall between (x, y) and (nx, ny)
+                                if not (maze.horizontal_walls[ny, nx] and maze.horizontal_walls[ny+1, nx] and maze.vertical_walls[ny, nx] and maze.vertical_walls[ny, nx+1]):
+                                    # We only want to add a wall if it doesn't block the direct path to the goal
+                                    if (nx, ny) != goal:
+                                        neighbors.append((nx, ny))
+                        
+                        if neighbors:
+                            maze.remove_wall((x, y), random.choice(neighbors))
 
     return maze
 
-# --- KERN FUNCTIES ---
 
 def _generate_dfs(maze, x1, x2, y1, y2):
-    """Genereert een perfect doolhof (honderden kronkels, GEEN rechte lijnen)."""
+    # Recursive DFS-based maze generator for creating a perfect maze in the specified region.
     if x2 <= x1 or y2 <= y1: return
     start_node = (random.randint(x1, x2-1), random.randint(y1, y2-1))
     visited = {start_node}
@@ -169,28 +173,3 @@ def _generate_dfs(maze, x1, x2, y1, y2):
             stack.append((nx, ny))
         else:
             stack.pop()
-
-def _has_wall(maze, c1, c2):
-    """Checkt of er een muur tussen twee cellen staat."""
-    x1, y1 = c1
-    x2, y2 = c2
-    if x1 == x2: return maze.horizontal_walls[max(y1, y2), x1]
-    if y1 == y2: return maze.vertical_walls[y1, max(x1, x2)]
-    return True
-
-def _find_shortest_path(maze, start, goal):
-    """Interne BFS om tijdens de generatie de route te vinden en te manipuleren."""
-    queue = [[start]]
-    visited = {start}
-    while queue:
-        path = queue.pop(0)
-        curr = path[-1]
-        if curr == goal: return path
-        x, y = curr
-        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            nx, ny = x + dx, y + dy
-            if maze.in_bounds(nx, ny) and (nx, ny) not in visited:
-                if not _has_wall(maze, curr, (nx, ny)):
-                    visited.add((nx, ny))
-                    queue.append(path + [(nx, ny)])
-    return []
