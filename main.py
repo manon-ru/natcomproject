@@ -28,14 +28,14 @@ from visualization.plot import visualize_maze
 NUM_TRIALS = 10
 LIMIT_MULTIPLIER = 10 
 SHOW_ALL_PATHS = True  
-ENABLE_PLOTTING = False 
+ENABLE_PLOTTING = True 
 POPULATION_SIZE = 100  
 DISRUPTION_TIME = 100
 
 TIERS = [
-    {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 1, "type": "U-Trap"},
-    {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2026, "type": "Sudden Wall"},
-    {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
+    # {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 1, "type": "U-Trap"},
+    {"name": "Sudden Wall (Dynamic)",  "width": 30, "height": 30, "seed": 2026, "type": "Sudden Wall"},
+    # {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
 ]
 
 ALGORITHMS_TO_RUN = [
@@ -58,22 +58,44 @@ def run_trials(AlgorithmClass, maze, num_trials: int, max_iterations: int, disru
             entropy_history = algo.entropy_history
     return results, entropy_history
 
-def print_summary(tier_name: str, algo_name: str, results: list[dict], entropy_history: list[float], optimal_steps: int) -> None:
+def print_summary(tier_name: str, algo_name: str, results: list[dict], entropy_history: list[float], optimal_steps: int, disruption_iteration: int = -1) -> None:
     sr = success_rate(results)
     mic = mean_iteration_count(results)
+    
     successful_steps = [len(r["path"]) - 1 for r in results if r["success"] and r["path"]]
     best_found = min(successful_steps) if successful_steps else None
-    mean_opt = (sum([steps / optimal_steps for steps in successful_steps]) / len(successful_steps)) if successful_steps else None
+    
+    if successful_steps:
+        opt_values = [steps / optimal_steps for steps in successful_steps]
+        mean_opt = sum(opt_values) / len(opt_values)
+    else:
+        mean_opt = None
+    
     dlr = diversity_loss_rate(entropy_history)
+
+    # Calculate the iteration string
+    if mic == float("inf"):
+        it_str = "N/A"
+    elif disruption_iteration > 0:
+        # Show iterations spent strictly AFTER the settlement phase
+        # Recovery Time = $Total\ Iterations - Disruption\ Threshold$
+        recovery_time = mic - disruption_iteration
+        it_str = f"{recovery_time:.1f} (after wall drop)"
+    else:
+        # Standard display for static mazes
+        it_str = f"{mic:.1f}"
 
     print(f"  [{algo_name}]")
     print(f"    Success rate:       {sr:.0%} ({sum(r['success'] for r in results)}/{len(results)})")
-    print(f"    Mean iterations:    {mic:.1f}" if mic != float("inf") else "    Mean iterations:    N/A (no successes)")
+    print(f"    Mean iterations:    {it_str}")
+    
     if best_found is not None:
         color_code = "\033[92m" if best_found == optimal_steps else ""
-        print(f"    Best found steps:   {color_code}{best_found}\033[0m (Optimal: {optimal_steps})")
+        reset_code = "\033[0m"
+        print(f"    Best found steps:   {color_code}{best_found}{reset_code} (Optimal: {optimal_steps})")
     else:
         print(f"    Best found steps:   N/A (Optimal: {optimal_steps})")
+        
     print(f"    Path optimality:    {mean_opt:.3f}" if mean_opt is not None else "    Path optimality:    N/A")
     print(f"    Diversity loss/10i: {dlr:.4f}" if dlr is not None else "    Diversity loss/10i: N/A")
     print()
@@ -113,7 +135,7 @@ def main() -> None:
                 disruption_iteration=current_disruption, 
                 **kwargs
             )
-            print_summary(tier["name"], algo_name, results, entropy_history, true_optimal_steps)
+            print_summary(tier["name"], algo_name, results, entropy_history, true_optimal_steps, current_disruption)
             
             if ENABLE_PLOTTING:
                 all_trial_snapshots = [] 
