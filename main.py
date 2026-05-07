@@ -31,20 +31,19 @@ from visualization.plot import visualize_maze
 # Experiment Configuration
 # ---------------------------------------------------------------------------
 TIERS = [
-    # {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 2026, "type": "U-Trap"},
-    # {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2026, "type": "Sudden Wall"},
-    {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
+    {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 1, "type": "U-Trap"},
+    # {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2021, "type": "Sudden Wall"},
+    # {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
 ]
 
 ALGORITHMS_TO_RUN = [
-    ("Baseline (DFS)", BaselineGA, {"backtrack": True}),
     ("Baseline (Naive)", BaselineGA, {"backtrack": False}),
+    ("Baseline (Backtrack)", BaselineGA, {"backtrack": True}),
 ]
 
 NUM_TRIALS = 50
-LIMIT_MULTIPLIER = 5
+LIMIT_MULTIPLIER = 10
 SHOW_ALL_PATHS = True  # Toggle this to overlay all trials as a heatmap
-
 
 def run_trials(AlgorithmClass, maze, num_trials: int, max_iterations: int, disruption_length: int = -1, **kwargs) -> tuple[list[dict], list[float]]:
     """Run AlgorithmClass for num_trials independent trials on maze."""
@@ -153,20 +152,21 @@ def main() -> None:
             best_snapshot_dist = float('inf')
             best_disruption_iteration = None
             
-            all_trial_paths = []
             all_trial_snapshots = []
+            all_trial_history = []
             
             for r in results:
-                # 1. Process the Final Path
                 path = r["path"]
-                if path:
-                    if SHOW_ALL_PATHS:
-                        all_trial_paths.append(path)
+                if not path: continue
+                
+                # Collect the chronological history for the heatmap lines
+                if SHOW_ALL_PATHS and "history" in r:
+                    all_trial_history.append(r["history"])
                         
-                    dist = abs(path[-1][0] - maze.goal[0]) + abs(path[-1][1] - maze.goal[1])
-                    if dist < best_final_dist or (dist == best_final_dist and len(path) < len(best_final_path or [])):
-                        best_final_dist = dist
-                        best_final_path = path
+                dist = abs(path[-1][0] - maze.goal[0]) + abs(path[-1][1] - maze.goal[1])
+                if dist < best_final_dist or (dist == best_final_dist and len(path) < len(best_final_path or [])):
+                    best_final_dist = dist
+                    best_final_path = path
 
                 # 2. Process the Snapshot (Before wall drops)
                 snap = r.get("snapshot")
@@ -197,12 +197,11 @@ def main() -> None:
                 maze.add_wall(maze.dynamic_wall[0], maze.dynamic_wall[1])
 
             # 2. Plot the "After" (Final) state
-            # Make sure we use best_final_dist here!
             status = "SUCCESS" if best_final_dist == 0 else f"FAILED (dist={best_final_dist})"
             visualize_maze(
                 maze, 
                 path=best_final_path, 
-                all_paths=all_trial_paths if SHOW_ALL_PATHS else None,
+                all_paths=all_trial_history if SHOW_ALL_PATHS else None,
                 title=f"{algo_name} Final Result [{status}]", 
                 show=True
             )
