@@ -8,11 +8,6 @@ NAN_NODE = (float('nan'), float('nan'))
 class GeneticAlgorithm:
     """
     Primary GA for maze navigation.
-    
-    Features:
-    - Tournament selection (K=5)
-    - Path segment crossover (splicing at common nodes)
-    - 4 neighbor local search mutation (adapted from 8 neighbor to respect grid walls)
     """
 
     def __init__(self, maze: MazeEnvironment, pop_size: int = 50, tournament_k: int = 5):
@@ -21,9 +16,9 @@ class GeneticAlgorithm:
         self.tournament_k = tournament_k
         self.entropy_history: list[float] = []
         self.global_history: list[tuple] = [] 
+        self.snapshot_history: list[tuple] = [] # Captured at T=100
 
     def initialize_population(self) -> list[dict]:
-        """Initialize the population with start nodes."""
         return [
             {
                 "path": [self.maze.start], 
@@ -34,10 +29,6 @@ class GeneticAlgorithm:
         ]
 
     def fitness(self, path: list[tuple]) -> float:
-        """
-        Score a path using negative Manhattan distance. 
-        Closer to the goal = less negative (higher fitness).
-        """
         if not path:
             return -float('inf')
         x, y = path[-1]
@@ -46,15 +37,10 @@ class GeneticAlgorithm:
         return -dist
 
     def tournament_select(self, population: list[dict]) -> dict:
-        """Sample tournament_k individuals, return the fittest."""
         participants = random.sample(population, self.tournament_k)
         return max(participants, key=lambda ind: self.fitness(ind["path"]))
 
     def crossover(self, parent_a: dict, parent_b: dict) -> dict:
-        """
-        Find a shared cell and splice path segments at that point.
-        Includes a loop erasure mechanism to ensure the resulting child path is valid.
-        """
         path_a = parent_a["path"]
         path_b = parent_b["path"]
         
@@ -82,12 +68,15 @@ class GeneticAlgorithm:
             "history": parent_a["history"][:idx_a] + clean_path[idx_a:] 
         }
 
-    def mutate(self, child: dict) -> dict:
+    def mutate(self, child: dict, disruption_iteration: int = -1) -> dict:
         """
-        Extend path by one valid unvisited step. Backtrack if completely stuck.
-        Records every step to the global history for the heatmap.
+        Gated mutation: only freezes at the goal if a disruption is scheduled.
         """
         if not child["path"]:
+            return child
+        
+        # GATE: Only freeze if we are in Phase 1 of a Sudden Wall experiment
+        if disruption_iteration > 0 and child["path"][-1] == self.maze.goal:
             return child
             
         curr_x, curr_y = child["path"][-1]
@@ -98,9 +87,8 @@ class GeneticAlgorithm:
             next_step = random.choice(options)
             child["visited"].add(next_step)
             child["path"].append(next_step)
-            child["history"].append(next_step)
             
-            # Record forward movement
+            # Record move to global history for the heatmap lines
             self.global_history.append((curr_x, curr_y))
             self.global_history.append(next_step)
             self.global_history.append(NAN_NODE)
@@ -108,47 +96,47 @@ class GeneticAlgorithm:
             if len(child["path"]) > 1:
                 prev_step = child["path"][-1]
                 child["path"].pop()
-                child["history"].append(child["path"][-1])
                 
-                # Record backward movement
+                # Record backtrack to global history
                 self.global_history.append(prev_step)
                 self.global_history.append(child["path"][-1])
                 self.global_history.append(NAN_NODE)
                 
         return child
 
-    def run(self, max_iterations: int = 1000, disruption_length: int = -1) -> dict:
+    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1) -> dict:
         population = self.initialize_population()
         self.global_history = [] 
+        self.snapshot_history = []
         
         snapshot_path = None
         wall_dropped = False
-        disruption_iteration = None
+        disruption_iteration_recorded = None
 
         for iteration in range(max_iterations):
             
-            # --- SPATIAL DISRUPTION LOGIC ---
-            if not wall_dropped and disruption_length > 0:
-                if any(len(ind["path"]) >= disruption_length for ind in population):
-                    if hasattr(self.maze, 'dynamic_wall') and self.maze.dynamic_wall:
-                        wall_dropped = True
-                        
-                        fittest = max(population, key=lambda ind: self.fitness(ind["path"]))
-                        snapshot_path = fittest["path"][:]
-                        disruption_iteration = iteration
-                        
-                        w1, w2 = self.maze.dynamic_wall
-                        self.maze.add_wall(w1, w2)
-                        
-                        for ind in population:
-                            path = ind["path"]
-                            for i in range(len(path) - 1):
-                                if (path[i] == w1 and path[i+1] == w2) or \
-                                   (path[i] == w2 and path[i+1] == w1):
-                                    ind["path"] = path[:i+1]
-                                    ind["visited"] = set(ind["path"])
-                                    ind["history"].append(ind["path"][-1])
-                                    break
+            # --- TEMPORAL DISRUPTION LOGIC ---
+            if not wall_dropped and disruption_iteration > 0 and iteration == disruption_iteration:
+                if hasattr(self.maze, 'dynamic_wall') and self.maze.dynamic_wall:
+                    wall_dropped = True
+                    
+                    fittest = max(population, key=lambda ind: self.fitness(ind["path"]))
+                    snapshot_path = fittest["path"][:]
+                    # Capture the collective swarm state for the blue cloud
+                    self.snapshot_history = self.global_history[:]
+                    disruption_iteration_recorded = iteration
+                    
+                    w1, w2 = self.maze.dynamic_wall
+                    self.maze.add_wall(w1, w2)
+                    
+                    for ind in population:
+                        path = ind["path"]
+                        for i in range(len(path) - 1):
+                            if (path[i] == w1 and path[i+1] == w2) or \
+                               (path[i] == w2 and path[i+1] == w1):
+                                ind["path"] = path[:i+1]
+                                ind["visited"] = set(ind["path"])
+                                break
             
             if iteration % 10 == 0:
                 positions = [ind["path"][-1] for ind in population]
@@ -160,7 +148,8 @@ class GeneticAlgorithm:
                 parent_b = self.tournament_select(population)
                 
                 child = self.crossover(parent_a, parent_b)
-                child = self.mutate(child)
+                # Pass the disruption_iteration to gate the goal-freeze
+                child = self.mutate(child, disruption_iteration)
                 
                 new_population.append(child)
                 
@@ -168,14 +157,18 @@ class GeneticAlgorithm:
 
             for individual in population:
                 if individual["path"][-1] == self.maze.goal:
-                    return {
-                        "success": True, 
-                        "iterations": iteration + 1, 
-                        "path": individual["path"],
-                        "snapshot": snapshot_path,
-                        "disruption_iteration": disruption_iteration,
-                        "history": self.global_history 
-                    }
+                    if disruption_iteration > 0 and iteration < disruption_iteration:
+                        continue # Let them settle
+                    else:
+                        return {
+                            "success": True, 
+                            "iterations": iteration + 1, 
+                            "path": individual["path"],
+                            "snapshot": snapshot_path,
+                            "snapshot_history": self.snapshot_history,
+                            "disruption_iteration": disruption_iteration_recorded,
+                            "history": self.global_history 
+                        }
 
         fittest = max(population, key=lambda ind: self.fitness(ind["path"]))
         return {
@@ -183,6 +176,7 @@ class GeneticAlgorithm:
             "iterations": max_iterations, 
             "path": fittest["path"],
             "snapshot": snapshot_path,
-            "disruption_iteration": disruption_iteration,
+            "snapshot_history": self.snapshot_history,
+            "disruption_iteration": disruption_iteration_recorded,
             "history": self.global_history
         }
