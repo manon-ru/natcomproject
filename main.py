@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 from maze.generator import generate_maze
 from algorithms.baseline_ga import BaselineGA
-# from algorithms.ga import GeneticAlgorithm
-# from algorithms.pso import PSO
-# from algorithms.aco import ACO
+from algorithms.ga import GeneticAlgorithm
+from algorithms.pso import PSO
+from algorithms.aco import ACO
 from evaluation.metrics import (
     success_rate,
     mean_iteration_count,
@@ -30,20 +30,25 @@ from visualization.plot import visualize_maze
 # ---------------------------------------------------------------------------
 # Experiment Configuration
 # ---------------------------------------------------------------------------
+
+NUM_TRIALS = 10
+LIMIT_MULTIPLIER = 5
+SHOW_ALL_PATHS = True  # Toggle this to overlay all trials as a heatmap
+POPULATION_SIZE = 50  
+
 TIERS = [
-    {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 1, "type": "U-Trap"},
-    # {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2021, "type": "Sudden Wall"},
-    # {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
+    # {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 1, "type": "U-Trap"},
+    {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2026, "type": "Sudden Wall"},
+    {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
 ]
 
 ALGORITHMS_TO_RUN = [
-    ("Baseline (Naive)", BaselineGA, {"backtrack": False}),
-    ("Baseline (Backtrack)", BaselineGA, {"backtrack": True}),
+    # ("Baseline (Naive)", BaselineGA, {"backtrack": False}),
+    # ("Baseline (Backtrack)", BaselineGA, {"backtrack": True}),
+    ("Genetic Algorithm", GeneticAlgorithm, {"pop_size": POPULATION_SIZE, "tournament_k": 5}),
+    ("Particle Swarm Optimization", PSO, {"num_particles": POPULATION_SIZE, "c1": 0.1, "c2": 0.2}),
+    ("Ant Colony Optimization", ACO, {"num_ants": POPULATION_SIZE, "evaporation_rate": 0.1}),
 ]
-
-NUM_TRIALS = 50
-LIMIT_MULTIPLIER = 10
-SHOW_ALL_PATHS = True  # Toggle this to overlay all trials as a heatmap
 
 def run_trials(AlgorithmClass, maze, num_trials: int, max_iterations: int, disruption_length: int = -1, **kwargs) -> tuple[list[dict], list[float]]:
     """Run AlgorithmClass for num_trials independent trials on maze."""
