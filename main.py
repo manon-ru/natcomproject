@@ -32,8 +32,8 @@ from visualization.plot import visualize_maze
 # ---------------------------------------------------------------------------
 TIERS = [
     # {"name": "U-Trap (Deception)",     "width": 10, "height": 10, "seed": 2026, "type": "U-Trap"},
-    {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2026, "type": "Sudden Wall"},
-    # {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
+    # {"name": "Sudden Wall (Dynamic)",  "width": 15, "height": 15, "seed": 2026, "type": "Sudden Wall"},
+    {"name": "Parallel (Multimodal)",  "width": 15, "height": 15, "seed": 2026, "type": "Parallel Paths"},
 ]
 
 ALGORITHMS_TO_RUN = [
