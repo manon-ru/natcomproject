@@ -1,5 +1,5 @@
 from collections import deque
-
+from math import log2
 from maze.environment import MazeEnvironment
 
 
@@ -21,34 +21,18 @@ def shortest_path_length(maze: MazeEnvironment) -> int | None:
                 visited.add((nx, ny))
                 queue.append(((nx, ny), length + 1))
 
-    return None  # Goal unreachable
+    return None
 
 
 def success_rate(results: list[dict]) -> float:
-    """
-    Fraction of runs where the algorithm found the goal.
-
-    Args:
-        results: List of result dicts from algorithm.run(), each with key "success".
-
-    Returns:
-        Float in [0, 1].
-    """
+    """Fraction of runs where the algorithm found the goal."""
     if not results:
         return 0.0
     return sum(1 for r in results if r["success"]) / len(results)
 
 
 def mean_iteration_count(results: list[dict]) -> float:
-    """
-    Mean number of iterations across successful runs.
-
-    Args:
-        results: List of result dicts with keys "success" and "iterations".
-
-    Returns:
-        Mean iteration count, or float('inf') if no successful runs.
-    """
+    """Mean number of iterations across successful runs."""
     successful = [r["iterations"] for r in results if r["success"]]
     if not successful:
         return float("inf")
@@ -56,17 +40,7 @@ def mean_iteration_count(results: list[dict]) -> float:
 
 
 def path_optimality(result: dict, maze: MazeEnvironment) -> float | None:
-    """
-    Ratio of the found path length to the optimal (BFS) path length.
-    A value of 1.0 is optimal; higher values indicate suboptimal paths.
-
-    Args:
-        result: A single result dict with keys "success" and "path".
-        maze:   The MazeEnvironment the algorithm ran on.
-
-    Returns:
-        Ratio (found / optimal), or None if the run failed or BFS finds no path.
-    """
+    """Ratio of the found path length to the optimal (BFS) path length."""
     if not result["success"] or result["path"] is None:
         return None
     optimal = shortest_path_length(maze)
@@ -75,27 +49,97 @@ def path_optimality(result: dict, maze: MazeEnvironment) -> float | None:
     return len(result["path"]) / optimal
 
 
-def diversity_loss_rate(entropy_history: list[float]) -> float | None:
-    """
-    Linear slope of entropy over time (bits per sampling interval).
-    A negative slope indicates diversity is being lost as the algorithm runs.
-
-    Args:
-        entropy_history: Entropy values sampled at regular intervals.
-
-    Returns:
-        Slope of a linear fit, or None if fewer than 2 data points.
-    """
-    if len(entropy_history) < 2:
-        return None
-
-    n = len(entropy_history)
-    x_mean = (n - 1) / 2
-    y_mean = sum(entropy_history) / n
-
-    numerator = sum((i - x_mean) * (h - y_mean) for i, h in enumerate(entropy_history))
-    denominator = sum((i - x_mean) ** 2 for i in range(n))
-
-    if denominator == 0:
+def calculate_shannon_entropy(positions: list[tuple]) -> float:
+    """Compute the Shannon entropy of a population based on agent positions."""
+    if not positions:
         return 0.0
-    return numerator / denominator
+
+    counts: dict[tuple, int] = {}
+    for pos in positions:
+        counts[pos] = counts.get(pos, 0) + 1
+
+    n = len(positions)
+    entropy = 0.0
+    for count in counts.values():
+        p = count / n
+        entropy -= p * log2(p)
+
+    return entropy
+
+
+def time_to_half_entropy(entropy_history: list[float]) -> int | None:
+    """
+    Iterations until entropy falls to 50% of its peak value.
+    Measures the speed of convergence after the initial exploration phase.
+    """
+    if not entropy_history:
+        return None
+    
+    peak_entropy = max(entropy_history)
+    if peak_entropy == 0.0:
+        return None
+        
+    peak_index = entropy_history.index(peak_entropy)
+    threshold = peak_entropy * 0.5
+    
+    for i in range(peak_index, len(entropy_history)):
+        if entropy_history[i] <= threshold:
+            return i
+            
+    return None
+
+
+def diversity_floor(entropy_history: list[float]) -> float | None:
+    """
+    The minimum entropy reached after the peak exploration phase.
+    Measures the severity of convergence.
+    """
+    if not entropy_history:
+        return None
+        
+    peak_entropy = max(entropy_history)
+    if peak_entropy == 0.0:
+        return 0.0
+        
+    peak_index = entropy_history.index(peak_entropy)
+    return min(entropy_history[peak_index:])
+
+
+def mean_entropy(entropy_history: list[float]) -> float | None:
+    """The average entropy sustained across the entire run."""
+    if not entropy_history:
+        return None
+    return sum(entropy_history) / len(entropy_history)
+
+
+def adaptation_time(
+    entropy_history: list[float], 
+    disruption_iteration: int, 
+    threshold_ratio: float = 0.8,
+    sample_interval: int = 10
+) -> int | None:
+    """
+    Iterations from disruption until entropy returns to a percentage (threshold_ratio)
+    of its pre-disruption value, accounting for the sampling interval.
+    """
+    # Convert raw iteration to the correct index in the sampled array
+    disruption_idx = disruption_iteration // sample_interval
+    
+    if disruption_idx < 1 or disruption_idx >= len(entropy_history):
+        return None
+        
+    pre_disruption_entropy = entropy_history[disruption_idx - 1]
+    
+    # If entropy was already 0, any recovery is 100%
+    if pre_disruption_entropy == 0:
+        threshold = 0.0001 
+    else:
+        threshold = pre_disruption_entropy * threshold_ratio
+    
+    # Search the array starting from the disruption point
+    for i in range(disruption_idx, len(entropy_history)):
+        if entropy_history[i] >= threshold:
+            # Convert the array index difference back into actual iterations
+            return (i - disruption_idx) * sample_interval
+            
+    return None

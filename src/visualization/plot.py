@@ -1,19 +1,19 @@
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import numpy as np
-
 from maze.environment import MazeEnvironment
 
 def visualize_maze(
     maze: MazeEnvironment,
-    path: list[tuple] | None = None,
-    all_paths: list[list[tuple]] | None = None,  # NEW PARAMETER
+    optimal_path: list[tuple] | None = None,  # RENAMED for clarity
+    best_found_path: list[tuple] | None = None, # NEW PARAMETER
+    all_paths: list[list[tuple]] | None = None,
     title: str = "Maze",
     show: bool = True,
     max_dim: int = 10
 ) -> plt.Figure:
     """
-    Render a wall-based MazeEnvironment with adaptive scaling for large grids.
+    Render the maze with faint histories, the algorithm's best found path (green),
+    and the absolute optimal ground truth (red).
     """
     aspect_ratio = maze.width / maze.height
     if aspect_ratio > 1:
@@ -29,18 +29,17 @@ def visualize_maze(
     line_weight = max(1, 3 * base_scale)
     font_size = max(8, 14 * base_scale)
 
-    # Draw horizontal walls
+    # Draw walls (omitted loop for brevity, same as previous functioning code)
     for y in range(maze.height + 1):
         for x in range(maze.width):
             if maze.horizontal_walls[y, x]:
                 ax.plot([x - 0.5, x + 0.5], [y - 0.5, y - 0.5], color="black", lw=line_weight)
-
-    # Draw vertical walls
     for y in range(maze.height):
         for x in range(maze.width + 1):
             if maze.vertical_walls[y, x]:
                 ax.plot([x - 0.5, x - 0.5], [y - 0.5, y + 0.5], color="black", lw=line_weight)
 
+    # Layer 1: Faint blue cloud of ALL paths (zorder=1)
     if all_paths:
         for history_list in all_paths:
             if history_list and len(history_list) > 1:
@@ -48,31 +47,37 @@ def visualize_maze(
                 ys = [node[1] for node in history_list]
                 ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
 
-    # Overlay the BEST solution path in red so it stands out
-    if path and len(path) > 1:
-        xs = [p[0] for p in path]
-        ys = [p[1] for p in path]
-        ax.plot(xs, ys, color="red", lw=line_weight * 1.5, alpha=0.9, zorder=2)
+    # Layer 2: Best Found by Algorithm in GREEN (zorder=2)
+    if best_found_path and len(best_found_path) > 1:
+        xs = [p[0] for p in best_found_path]
+        ys = [p[1] for p in best_found_path]
+        # Draw slightly thicker than blue, thinner than optimal red
+        ax.plot(xs, ys, color="lime", lw=line_weight * 1.3, alpha=0.9, zorder=2)
 
-    # Start and goal markers
+    # Layer 3: Absolute Optimal Ground Truth in RED (zorder=3)
+    # Keeping this as Layer 3 ensures ground truth is always visible on top
+    if optimal_path and len(optimal_path) > 1:
+        xs = [p[0] for p in optimal_path]
+        ys = [p[1] for p in optimal_path]
+        ax.plot(xs, ys, color="red", lw=line_weight * 1.5, alpha=0.8, zorder=3)
+
+    # markers, aspect, bounds, same as before...
+    # (S and G markers use zorder=4 to stay on very top)
     sx, sy = maze.start
     gx, gy = maze.goal
     ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center", 
-            fontsize=font_size, zorder=3)
+            fontsize=font_size, zorder=4)
     ax.text(gx, gy, "G", color="darkred", weight="bold", ha="center", va="center", 
-            fontsize=font_size, zorder=3)
+            fontsize=font_size, zorder=4)
 
     ax.set_aspect("equal")
     ax.set_xlim(-0.5, maze.width - 0.5)
     ax.set_ylim(maze.height - 0.5, -0.5)
     ax.axis("off")
     ax.set_title(title, fontsize=12)
-
     plt.tight_layout()
     
-    if show:
-        plt.show()
-
+    if show: plt.show()
     return fig
 
 

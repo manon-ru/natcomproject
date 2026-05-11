@@ -1,11 +1,11 @@
 import random
-from evaluation.entropy import calculate_shannon_entropy
+from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
 
-class BaselineGA:
+class OnePlusOneES:
     """
-    (1+1)-GA baseline: A randomized approach that can be configured 
-    as a systematic DFS (backtrack=True) or a naive random walk (backtrack=False).
+    (1+1) Evolutionary Strategy (ES): A randomized approach that can be configured 
+    as a systematic Stochastic DFS (backtrack=True) or a naive random walk (backtrack=False).
     """
     def __init__(self, maze: MazeEnvironment, backtrack: bool = True):
         self.maze = maze
@@ -55,11 +55,14 @@ class BaselineGA:
 
         return path
 
-    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1) -> dict:
+    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1, forced_min_iterations: int = 0) -> dict:
         individual = self.initialize_individual()
         snapshot_path = None
         wall_dropped = False
         disruption_iteration_recorded = None
+        
+        # Store the first successful run so we can return it later
+        first_success_result = None
 
         for iteration in range(max_iterations):
             # --- TEMPORAL DISRUPTION LOGIC ---
@@ -91,15 +94,24 @@ class BaselineGA:
                 if disruption_iteration > 0 and iteration < disruption_iteration:
                     continue # PHASE 1: Stay at goal to reinforce location.
                 else:
-                    # PHASE 2: Goal found or disruption time passed.
-                    return {
-                        "success": True, 
-                        "iterations": iteration + 1, 
-                        "path": individual, 
-                        "snapshot": snapshot_path, 
-                        "disruption_iteration": disruption_iteration_recorded,
-                        "history": self.full_history
-                    }
+                    if first_success_result is None:
+                        first_success_result = {
+                            "success": True, 
+                            "iterations": iteration + 1, 
+                            "path": individual[:], 
+                            "snapshot": snapshot_path, 
+                            "disruption_iteration": disruption_iteration_recorded,
+                        }
+            
+            # Only return if we have a success AND we have passed the forced minimum
+            if first_success_result is not None and iteration >= forced_min_iterations:
+                first_success_result["history"] = self.full_history
+                return first_success_result
+
+        # Fallback if loop ends
+        if first_success_result is not None:
+            first_success_result["history"] = self.full_history
+            return first_success_result
 
         return {
             "success": False, 

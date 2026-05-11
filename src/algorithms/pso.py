@@ -1,5 +1,5 @@
 import random
-from evaluation.entropy import calculate_shannon_entropy
+from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
 
 # Used to break Matplotlib lines so they do not zig zag across the maze
@@ -102,7 +102,7 @@ class PSO:
 
         return particle
 
-    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1) -> dict:
+    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1, forced_min_iterations: int = 0) -> dict:
         particles = self.initialize_particles()
         global_best: list[tuple] = [self.maze.start]
         self.global_history = []
@@ -110,6 +110,9 @@ class PSO:
         snapshot_path = None
         wall_dropped = False
         disruption_iteration_recorded = None
+        
+        # Store the first successful run so we can return it later
+        first_success_result = None
 
         for iteration in range(max_iterations):
             # --- TEMPORAL DISRUPTION LOGIC ---
@@ -138,7 +141,6 @@ class PSO:
                 self.entropy_history.append(calculate_shannon_entropy(positions))
 
             for particle in particles:
-                # Pass disruption_iteration to gate the settlement behavior
                 particle = self.update_particle(particle, global_best, disruption_iteration)
                 
                 if self.distance_to_goal(particle["path"]) < self.distance_to_goal(global_best):
@@ -148,13 +150,25 @@ class PSO:
                     if disruption_iteration > 0 and iteration < disruption_iteration:
                         continue 
                     else:
-                        return {
-                            "success": True, "iterations": iteration + 1, 
-                            "path": particle["path"], "snapshot": snapshot_path,
-                            "snapshot_history": self.snapshot_history,
-                            "disruption_iteration": disruption_iteration_recorded,
-                            "history": self.global_history
-                        }
+                        if first_success_result is None:
+                            first_success_result = {
+                                "success": True, 
+                                "iterations": iteration + 1, 
+                                "path": particle["path"][:], 
+                                "snapshot": snapshot_path,
+                                "snapshot_history": self.snapshot_history,
+                                "disruption_iteration": disruption_iteration_recorded,
+                            }
+                            
+            # Only return if we have a success AND we have passed the forced minimum
+            if first_success_result is not None and iteration >= forced_min_iterations:
+                first_success_result["history"] = self.global_history
+                return first_success_result
+
+        # Fallback if loop ends
+        if first_success_result is not None:
+            first_success_result["history"] = self.global_history
+            return first_success_result
 
         return {
             "success": False, "iterations": max_iterations, 
