@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from evaluation.entropy import calculate_shannon_entropy
+from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
 
 # Marker for Matplotlib to break line segments
@@ -69,13 +69,16 @@ class ACO:
         self.pheromones *= (1.0 - self.evaporation_rate)
         self.pheromones = np.maximum(self.pheromones, 0.01)
 
-    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1) -> dict:
+    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1, forced_min_iterations: int = 0) -> dict:
         ants = self.initialize_ants()
         self.global_history = []
         
         snapshot_path = None
         wall_dropped = False
         disruption_iteration_recorded = None
+        
+        # NEW: Store the first successful run so we can return it later
+        first_success_result = None 
 
         for iteration in range(max_iterations):
             
@@ -84,10 +87,8 @@ class ACO:
                 if hasattr(self.maze, 'dynamic_wall') and self.maze.dynamic_wall:
                     wall_dropped = True
                     
-                    # Capture the collective swarm cloud
                     self.snapshot_history = self.global_history[:]
                     
-                    # Find the most complete path currently in the swarm for the red line
                     best_ant = min(ants, key=lambda a: self.heuristic(*a["path"][-1]))
                     snapshot_path = best_ant["path"][:]
                     disruption_iteration_recorded = iteration
@@ -104,6 +105,7 @@ class ACO:
                                 a["visited"] = set(a["path"])
                                 break
 
+            # Record entropy every 10 iterations
             if iteration % 10 == 0:
                 positions = [a["path"][-1] for a in ants]
                 self.entropy_history.append(calculate_shannon_entropy(positions))
@@ -112,13 +114,17 @@ class ACO:
 
             for ant in ants:
                 curr_pos = ant["path"][-1]
+                
+                # Freeze ant if it reached the goal so it doesn't wander off
+                if curr_pos == self.maze.goal and wall_dropped:
+                    continue
+                    
                 next_cell = self.choose_next(curr_pos[0], curr_pos[1], ant["visited"])
 
                 if next_cell:
                     ant["visited"].add(next_cell)
                     ant["path"].append(next_cell)
                     
-                    # Record for global heatmap
                     self.global_history.append(curr_pos)
                     self.global_history.append(next_cell)
                     self.global_history.append(NAN_NODE)
@@ -127,28 +133,36 @@ class ACO:
                 else:
                     if len(ant["path"]) > 1:
                         old_pos = ant["path"].pop()
-                        # Record backtrack
                         self.global_history.append(old_pos)
                         self.global_history.append(ant["path"][-1])
                         self.global_history.append(NAN_NODE)
 
                 if ant["path"][-1] == self.maze.goal:
                     if disruption_iteration > 0 and iteration < disruption_iteration:
-                        # Before wall: Save the successful path and reset
                         snapshot_path = ant["path"][:] 
                         ant["path"] = [self.maze.start]
                         ant["visited"] = {self.maze.start}
                     else:
-                        # After wall: Final success
-                        return {
-                            "success": True, 
-                            "iterations": iteration + 1, 
-                            "path": ant["path"],
-                            "snapshot": snapshot_path,
-                            "snapshot_history": self.snapshot_history,
-                            "disruption_iteration": disruption_iteration_recorded,
-                            "history": self.global_history
-                        }
+                        # NEW: Record success but don't break immediately
+                        if first_success_result is None:
+                            first_success_result = {
+                                "success": True, 
+                                "iterations": iteration + 1, 
+                                "path": ant["path"][:],
+                                "snapshot": snapshot_path,
+                                "snapshot_history": self.snapshot_history,
+                                "disruption_iteration": disruption_iteration_recorded,
+                            }
+
+            # NEW: Only return if we have a success AND we've passed the forced minimum
+            if first_success_result is not None and iteration >= forced_min_iterations:
+                first_success_result["history"] = self.global_history
+                return first_success_result
+
+        # Fallback if loop ends
+        if first_success_result is not None:
+            first_success_result["history"] = self.global_history
+            return first_success_result
 
         best_ant = min(ants, key=lambda a: self.heuristic(*a["path"][-1]))
         return {

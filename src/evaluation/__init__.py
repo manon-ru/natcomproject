@@ -1,10 +1,13 @@
-from evaluation.entropy import calculate_shannon_entropy
 from evaluation.metrics import (
+    calculate_shannon_entropy,
     success_rate,
     mean_iteration_count,
     path_optimality,
-    diversity_loss_rate,
     shortest_path_length,
+    time_to_half_entropy,
+    diversity_floor,
+    mean_entropy,
+    adaptation_time,
 )
 
 __all__ = [
@@ -12,6 +15,9 @@ __all__ = [
     "success_rate",
     "mean_iteration_count",
     "path_optimality",
-    "diversity_loss_rate",
     "shortest_path_length",
+    "time_to_half_entropy",
+    "diversity_floor",
+    "mean_entropy",
+    "adaptation_time",
 ]

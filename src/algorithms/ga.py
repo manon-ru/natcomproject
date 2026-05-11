@@ -1,5 +1,5 @@
 import random
-from evaluation.entropy import calculate_shannon_entropy
+from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
 
 # Used to break Matplotlib lines so they don't zig zag across the maze
@@ -104,7 +104,7 @@ class GeneticAlgorithm:
                 
         return child
 
-    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1) -> dict:
+    def run(self, max_iterations: int = 1000, disruption_iteration: int = -1, forced_min_iterations: int = 0) -> dict:
         population = self.initialize_population()
         self.global_history = [] 
         self.snapshot_history = []
@@ -112,6 +112,9 @@ class GeneticAlgorithm:
         snapshot_path = None
         wall_dropped = False
         disruption_iteration_recorded = None
+        
+        # NEW: Store the first successful run so we can return it later
+        first_success_result = None
 
         for iteration in range(max_iterations):
             
@@ -122,7 +125,6 @@ class GeneticAlgorithm:
                     
                     fittest = max(population, key=lambda ind: self.fitness(ind["path"]))
                     snapshot_path = fittest["path"][:]
-                    # Capture the collective swarm state for the blue cloud
                     self.snapshot_history = self.global_history[:]
                     disruption_iteration_recorded = iteration
                     
@@ -148,7 +150,6 @@ class GeneticAlgorithm:
                 parent_b = self.tournament_select(population)
                 
                 child = self.crossover(parent_a, parent_b)
-                # Pass the disruption_iteration to gate the goal-freeze
                 child = self.mutate(child, disruption_iteration)
                 
                 new_population.append(child)
@@ -158,17 +159,28 @@ class GeneticAlgorithm:
             for individual in population:
                 if individual["path"][-1] == self.maze.goal:
                     if disruption_iteration > 0 and iteration < disruption_iteration:
-                        continue # Let them settle
+                        continue 
                     else:
-                        return {
-                            "success": True, 
-                            "iterations": iteration + 1, 
-                            "path": individual["path"],
-                            "snapshot": snapshot_path,
-                            "snapshot_history": self.snapshot_history,
-                            "disruption_iteration": disruption_iteration_recorded,
-                            "history": self.global_history 
-                        }
+                        # NEW: Record success but don't break immediately
+                        if first_success_result is None:
+                            first_success_result = {
+                                "success": True, 
+                                "iterations": iteration + 1, 
+                                "path": individual["path"][:],
+                                "snapshot": snapshot_path,
+                                "snapshot_history": self.snapshot_history,
+                                "disruption_iteration": disruption_iteration_recorded,
+                            }
+                            
+            # NEW: Only return if we have a success AND we've passed the forced minimum
+            if first_success_result is not None and iteration >= forced_min_iterations:
+                first_success_result["history"] = self.global_history
+                return first_success_result
+
+        # Fallback if loop ends
+        if first_success_result is not None:
+            first_success_result["history"] = self.global_history
+            return first_success_result
 
         fittest = max(population, key=lambda ind: self.fitness(ind["path"]))
         return {

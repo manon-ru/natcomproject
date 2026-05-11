@@ -3,6 +3,50 @@ from turtle import width
 import numpy as np
 from maze.environment import MazeEnvironment
 
+braid_factor = 0.3  # Adjust this to control how many extra paths are added (0.0 = perfect maze, 1.0 = very braided)
+
+def _braid_maze(maze, x1, x2, y1, y2, factor):
+    """
+    Randomly removes internal walls within a region to create multiple paths.
+    factor: 0.0 (perfect maze) to 1.0 (very sparse/open).
+    """
+    if factor <= 0: return
+    
+    for y in range(y1, y2):
+        for x in range(x1, x2):
+            # Randomly check horizontal and vertical walls
+            for dx, dy in [(1, 0), (0, 1)]:
+                nx, ny = x + dx, y + dy
+                if x1 <= nx < x2 and y1 <= ny < y2:
+                    if maze.has_wall_between((x, y), (nx, ny)):
+                        if random.random() < factor:
+                            maze.remove_wall((x, y), (nx, ny))
+
+
+def _generate_dfs(maze, x1, x2, y1, y2):
+    # Recursive DFS-based maze generator for creating a perfect maze in the specified region.
+    if x2 <= x1 or y2 <= y1: return
+    start_node = (random.randint(x1, x2-1), random.randint(y1, y2-1))
+    visited = {start_node}
+    stack = [start_node]
+
+    while stack:
+        x, y = stack[-1]
+        neighbors = []
+        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nx, ny = x + dx, y + dy
+            if x1 <= nx < x2 and y1 <= ny < y2 and (nx, ny) not in visited:
+                neighbors.append((nx, ny))
+
+        if neighbors:
+            nx, ny = random.choice(neighbors)
+            maze.remove_wall((x, y), (nx, ny))
+            visited.add((nx, ny))
+            stack.append((nx, ny))
+        else:
+            stack.pop()
+
+
 def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "Random") -> MazeEnvironment:
     random.seed(seed)
     np.random.seed(seed)
@@ -19,16 +63,17 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
 
     if maze_type == "Random":
         _generate_dfs(maze, 0, width, 0, height)
+        # Post-process to add multiple paths
+        _braid_maze(maze, 0, width, 0, height, braid_factor)
         
     elif maze_type == "U-Trap":
-        # MAZE 1: U-Trap (Deception)
         mid_y = height // 2
-        
-        # Step 1: Generate two completely isolated halves
-        # Top half (The True Path)
+        # Generate and then braid each half independently to maintain the trap's logic
         _generate_dfs(maze, 0, width, 0, mid_y)
-        # Bottom half (The Trap)
+        _braid_maze(maze, 0, width, 0, mid_y, braid_factor)
+        
         _generate_dfs(maze, 0, width, mid_y, height)
+        _braid_maze(maze, 0, width, mid_y, height, braid_factor)
 
         # Step 2: Hermetically seal the border between the two halves
         for x in range(width):
@@ -56,15 +101,13 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
             maze.remove_wall((x, mid_y), (x + 1, mid_y))
 
     elif maze_type == "Sudden Wall":
-        # MAZE 2: Sudden Wall (Dynamic Adaptability)
         mid_x = width // 2
-        start, goal = (mid_x, 0), (mid_x, height - 1)
-        maze.start, maze.goal = start, goal
-        
-        # Step 1: Generate distinct random mazes for both wings
-        # Left Wing (0 to mid_x-1) and Right Wing (mid_x+1 to width-1)
+        # Generate and braid the wings
         _generate_dfs(maze, 0, mid_x, 0, height)
+        _braid_maze(maze, 0, mid_x, 0, height, braid_factor)
+        
         _generate_dfs(maze, mid_x + 1, width, 0, height)
+        _braid_maze(maze, mid_x + 1, width, 0, height, braid_factor)
         
         # Step 2: Carve the Short Path (The Central Highway)
         for y in range(height - 1):
@@ -88,9 +131,8 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
     elif maze_type == "Parallel Paths":
         # Maze 3: Parallel Paths + small detour at the end
         mid_x = width // 2
-
-        # Step 1: generate DFS background noise on the left half (True Path)
         _generate_dfs(maze, 0, mid_x, 1, height - 2)
+        _braid_maze(maze, 0, mid_x, 1, height - 2, braid_factor)
 
         # Step 2: Mirror walls to the right half
         for y in range(1, height - 2):
@@ -149,27 +191,3 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
                             maze.remove_wall((x, y), random.choice(neighbors))
 
     return maze
-
-
-def _generate_dfs(maze, x1, x2, y1, y2):
-    # Recursive DFS-based maze generator for creating a perfect maze in the specified region.
-    if x2 <= x1 or y2 <= y1: return
-    start_node = (random.randint(x1, x2-1), random.randint(y1, y2-1))
-    visited = {start_node}
-    stack = [start_node]
-
-    while stack:
-        x, y = stack[-1]
-        neighbors = []
-        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            nx, ny = x + dx, y + dy
-            if x1 <= nx < x2 and y1 <= ny < y2 and (nx, ny) not in visited:
-                neighbors.append((nx, ny))
-
-        if neighbors:
-            nx, ny = random.choice(neighbors)
-            maze.remove_wall((x, y), (nx, ny))
-            visited.add((nx, ny))
-            stack.append((nx, ny))
-        else:
-            stack.pop()
