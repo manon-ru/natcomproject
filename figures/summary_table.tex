@@ -1,0 +1,39 @@
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lllrrrrrrr}
+\toprule
+Algo & Maze & Pop & SR & Iters & Opt & $t_{50\%}$ & Floor & $\bar{H}$ & Adapt \\
+\midrule
+GA & U-Trap & 20 & 0.00 & 552 & N/A & N/A & 3.96 & 4.23 & N/A \\
+GA & U-Trap & 50 & 0.00 & 552 & N/A & N/A & 5.22 & 5.41 & N/A \\
+GA & U-Trap & 150 & 0.00 & 552 & N/A & N/A & 6.45 & 6.60 & N/A \\
+GA & SW & 20 & 0.00 & 534 & N/A & N/A & 3.90 & 4.20 & 0 \\
+GA & SW & 50 & 0.00 & 534 & N/A & N/A & 5.13 & 5.37 & 0 \\
+GA & SW & 150 & 0.00 & 534 & N/A & N/A & 6.34 & 6.52 & 0 \\
+GA & PP & 20 & 0.00 & 548 & N/A & N/A & 3.78 & 4.13 & N/A \\
+GA & PP & 50 & 0.00 & 548 & N/A & N/A & 4.96 & 5.21 & N/A \\
+GA & PP & 150 & 0.00 & 548 & N/A & N/A & 6.02 & 6.20 & N/A \\
+PSO & U-Trap & 20 & 0.55 & 408 & 3.14 & N/A & 4.11 & 4.04 & N/A \\
+PSO & U-Trap & 50 & 0.75 & 327 & 2.94 & N/A & 5.43 & 5.04 & N/A \\
+PSO & U-Trap & 150 & 0.96 & 246 & 2.76 & N/A & 6.81 & 5.84 & N/A \\
+PSO & SW & 20 & 1.00 & 226 & 2.27 & N/A & 4.07 & 2.87 & 0 \\
+PSO & SW & 50 & 1.00 & 186 & 2.01 & N/A & 5.29 & 3.47 & 0 \\
+PSO & SW & 150 & 1.00 & 152 & 1.89 & N/A & 6.64 & 4.18 & 0 \\
+PSO & PP & 20 & 1.00 & 133 & 1.76 & N/A & 4.19 & 3.68 & N/A \\
+PSO & PP & 50 & 1.00 & 101 & 1.47 & N/A & 5.48 & 4.41 & N/A \\
+PSO & PP & 150 & 1.00 & 80 & 1.26 & N/A & 6.73 & 4.98 & N/A \\
+ACO & U-Trap & 20 & 0.61 & 364 & 2.80 & N/A & 3.77 & 3.44 & N/A \\
+ACO & U-Trap & 50 & 0.68 & 314 & 2.63 & N/A & 5.05 & 4.36 & N/A \\
+ACO & U-Trap & 150 & 0.76 & 279 & 2.48 & N/A & 6.33 & 5.15 & N/A \\
+ACO & SW & 20 & 0.97 & 214 & 2.49 & 92 & 2.55 & 2.47 & 0 \\
+ACO & SW & 50 & 1.00 & 178 & 2.17 & 98 & 3.58 & 3.32 & 0 \\
+ACO & SW & 150 & 0.99 & 158 & 2.06 & 98 & 5.01 & 4.17 & 0 \\
+ACO & PP & 20 & 0.97 & 216 & 2.47 & N/A & 3.43 & 2.83 & N/A \\
+ACO & PP & 50 & 0.98 & 182 & 2.21 & N/A & 4.48 & 3.48 & N/A \\
+ACO & PP & 150 & 1.00 & 159 & 2.09 & N/A & 5.73 & 4.11 & N/A \\
+\bottomrule
+\end{tabular}
+\caption{Summary metrics per experimental cell (3 algorithms × 3 maze types × 3 population sizes). SR=success rate, Iters=mean iterations, Opt=mean path optimality, $t_{50\%}$=time to 50\% entropy loss, Floor=diversity floor, $\bar{H}$=mean entropy, Adapt=adaptation time (Sudden Wall only).}
+\label{tab:summary}
+\end{table}
