@@ -1,0 +1,3 @@
+QA-GA-CHROM: OK
+Smoke run: OK
+Result keys: OK
