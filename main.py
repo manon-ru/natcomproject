@@ -12,7 +12,6 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 from maze.generator import generate_maze
-from algorithms.es import OnePlusOneES
 from algorithms.ga import GeneticAlgorithm
 from algorithms.pso import PSO
 from algorithms.aco import ACO
@@ -51,7 +50,6 @@ TIERS = [
 ]
 
 ALGORITHMS_TO_RUN = [
-    ("(1+1) Evolutionary Strategy", OnePlusOneES, {"backtrack": True}),
     ("Genetic Algorithm", GeneticAlgorithm, {"pop_size": POPULATION_SIZE, "tournament_k": 5}),
     ("Particle Swarm Optimization", PSO, {"num_particles": POPULATION_SIZE, "c1": 0.1, "c2": 0.2}),
     ("Ant Colony Optimization", ACO, {"num_ants": POPULATION_SIZE, "evaporation_rate": 0.1}),
@@ -136,10 +134,6 @@ def print_summary(
             if adaptation_time(h, disruption_iteration, threshold_ratio=recovery_ratio) is not None
         ]
         avg_adapt_time = sum(adapt_times) / len(adapt_times) if adapt_times else None
-
-    # ES exclusion
-    if "(1+1)" in algo_name:
-        avg_half_time = avg_floor = avg_mean_ent = avg_adapt_time = None
 
     # Iteration string
     if mic == float("inf"):
