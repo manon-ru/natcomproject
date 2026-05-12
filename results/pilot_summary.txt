@@ -1,0 +1,2 @@
+Pilot: 27 runs
+Projected full run: ~2700 tasks
