@@ -12,8 +12,8 @@ def visualize_maze(
     max_dim: int = 10
 ) -> plt.Figure:
     """
-    Render the maze with faint histories, the algorithm's best found path (green),
-    and the absolute optimal ground truth (red).
+    Render the maze with faint histories, the algorithm's best found path (red),
+    and the absolute optimal ground truth (green).
     """
     aspect_ratio = maze.width / maze.height
     if aspect_ratio > 1:
@@ -47,19 +47,19 @@ def visualize_maze(
                 ys = [node[1] for node in history_list]
                 ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
 
-    # Layer 2: Best Found by Algorithm in GREEN (zorder=2)
+    # Layer 2: Best Found by Algorithm in RED (zorder=2)
     if best_found_path and len(best_found_path) > 1:
         xs = [p[0] for p in best_found_path]
         ys = [p[1] for p in best_found_path]
         # Draw slightly thicker than blue, thinner than optimal red
-        ax.plot(xs, ys, color="lime", lw=line_weight * 1.3, alpha=0.9, zorder=2)
+        ax.plot(xs, ys, color="red", lw=line_weight * 1.3, alpha=0.9, zorder=2)
 
-    # Layer 3: Absolute Optimal Ground Truth in RED (zorder=3)
+    # Layer 3: Absolute Optimal Ground Truth in GREEN (zorder=3)
     # Keeping this as Layer 3 ensures ground truth is always visible on top
     if optimal_path and len(optimal_path) > 1:
         xs = [p[0] for p in optimal_path]
         ys = [p[1] for p in optimal_path]
-        ax.plot(xs, ys, color="red", lw=line_weight * 1.5, alpha=0.8, zorder=3)
+        ax.plot(xs, ys, color="lime", lw=line_weight * 1.5, alpha=0.8, zorder=3)
 
     # markers, aspect, bounds, same as before...
     # (S and G markers use zorder=4 to stay on very top)
