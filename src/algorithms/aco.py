@@ -1,3 +1,13 @@
+"""
+Ant Colony Optimization for grid-based maze navigation.
+
+NOTE ON PHEROMONE REPRESENTATION: This implementation stores pheromone
+values per CELL rather than per EDGE. Akka & Khaber (cited in the proposal
+for structural parameters) typically use a per-edge formulation. Our
+per-cell choice is a project-specific design that reduces memory and is
+consistent with the cell-by-cell agent movement model. This deviation is
+noted in the report's Approach section.
+"""
 import random
 import numpy as np
 from evaluation.metrics import calculate_shannon_entropy
@@ -12,9 +22,10 @@ class ACO:
         maze: MazeEnvironment,
         num_ants: int = 50,
         evaporation_rate: float = 0.1,
-        pheromone_deposit: float = 1.0,
+        pheromone_deposit: float = 2.0,
         alpha: float = 1.0,
-        beta: float = 2.0,
+        beta: float = 5.0,
+        initial_pheromone: float = 0.8,
     ):
         self.maze = maze
         self.num_ants = num_ants
@@ -22,11 +33,12 @@ class ACO:
         self.pheromone_deposit = pheromone_deposit
         self.alpha = alpha
         self.beta = beta
+        self.initial_pheromone = initial_pheromone
         self.entropy_history: list[float] = []
         self.global_history: list[tuple] = []   # Tracks all movement
         self.snapshot_history: list[tuple] = [] # Collective state at T=100
         
-        self.pheromones = np.ones((maze.height, maze.width), dtype=float) * 0.1
+        self.pheromones = np.ones((maze.height, maze.width), dtype=float) * initial_pheromone
 
     def initialize_ants(self) -> list[dict]:
         return [
