@@ -4,16 +4,14 @@ from maze.environment import MazeEnvironment
 
 def visualize_maze(
     maze: MazeEnvironment,
-    optimal_path: list[tuple] | None = None,  # RENAMED for clarity
-    best_found_path: list[tuple] | None = None, # NEW PARAMETER
+    optimal_path: list[tuple] | None = None, 
     all_paths: list[list[tuple]] | None = None,
     title: str = "Maze",
     show: bool = True,
     max_dim: int = 10
 ) -> plt.Figure:
     """
-    Render the maze with faint histories, the algorithm's best found path (red),
-    and the absolute optimal ground truth (green).
+    Render the maze with faint histories (blue) and the absolute optimal ground truth (green).
     """
     aspect_ratio = maze.width / maze.height
     if aspect_ratio > 1:
@@ -29,7 +27,7 @@ def visualize_maze(
     line_weight = max(1, 3 * base_scale)
     font_size = max(8, 14 * base_scale)
 
-    # Draw walls (omitted loop for brevity, same as previous functioning code)
+    # Draw walls
     for y in range(maze.height + 1):
         for x in range(maze.width):
             if maze.horizontal_walls[y, x]:
@@ -47,28 +45,19 @@ def visualize_maze(
                 ys = [node[1] for node in history_list]
                 ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
 
-    # Layer 2: Best Found by Algorithm in RED (zorder=2)
-    if best_found_path and len(best_found_path) > 1:
-        xs = [p[0] for p in best_found_path]
-        ys = [p[1] for p in best_found_path]
-        # Draw slightly thicker than blue, thinner than optimal red
-        ax.plot(xs, ys, color="red", lw=line_weight * 1.3, alpha=0.9, zorder=2)
-
-    # Layer 3: Absolute Optimal Ground Truth in GREEN (zorder=3)
-    # Keeping this as Layer 3 ensures ground truth is always visible on top
+    # Layer 2: Absolute Optimal Ground Truth in GREEN (zorder=2)
     if optimal_path and len(optimal_path) > 1:
         xs = [p[0] for p in optimal_path]
         ys = [p[1] for p in optimal_path]
-        ax.plot(xs, ys, color="lime", lw=line_weight * 1.5, alpha=0.8, zorder=3)
+        ax.plot(xs, ys, color="lime", lw=line_weight * 1.5, alpha=0.8, zorder=2)
 
-    # markers, aspect, bounds, same as before...
-    # (S and G markers use zorder=4 to stay on very top)
+    # Markers (S and G use zorder=3 to stay on very top)
     sx, sy = maze.start
     gx, gy = maze.goal
     ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center", 
-            fontsize=font_size, zorder=4)
+            fontsize=font_size, zorder=3)
     ax.text(gx, gy, "G", color="darkred", weight="bold", ha="center", va="center", 
-            fontsize=font_size, zorder=4)
+            fontsize=font_size, zorder=3)
 
     ax.set_aspect("equal")
     ax.set_xlim(-0.5, maze.width - 0.5)
