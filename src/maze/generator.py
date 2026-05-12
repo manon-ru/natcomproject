@@ -1,5 +1,4 @@
 import random
-from turtle import width
 import numpy as np
 from maze.environment import MazeEnvironment
 
@@ -146,7 +145,7 @@ def generate_maze(width: int, height: int, seed: int = 2026, maze_type: str = "R
         # Step 3: close the middle corridor to create two parallel paths
         for y in range(1, height - 1):
             maze.vertical_walls[y, mid_x] = True
-            maze.vertical_walls[y, mid_x + 1] = True # Zorg dat de mid-kolom echt dicht is
+            maze.vertical_walls[y, mid_x + 1] = True  # Ensure the middle column is fully sealed
 
         # Step 4: Connect Start to both halves (Entrance)
         maze.remove_wall(start, (mid_x - 1, 0)) # Door to the left
