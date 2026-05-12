@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from collections import deque
 from math import log2
-from maze.environment import MazeEnvironment
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from maze.environment import MazeEnvironment
 
 
 def shortest_path_length(maze: MazeEnvironment) -> int | None:
@@ -67,10 +72,10 @@ def calculate_shannon_entropy(positions: list[tuple]) -> float:
     return entropy
 
 
-def time_to_half_entropy(entropy_history: list[float]) -> int | None:
+def time_to_half_entropy(entropy_history: list[float], sample_interval: int = 10) -> int | None:
     """
-    Iterations until entropy falls to 50% of its peak value.
-    Measures the speed of convergence after the initial exploration phase.
+    Iterations after the peak until entropy falls to 50% of its peak value.
+    Multiplied by sample_interval to return actual iteration count.
     """
     if not entropy_history:
         return None
@@ -84,8 +89,8 @@ def time_to_half_entropy(entropy_history: list[float]) -> int | None:
     
     for i in range(peak_index, len(entropy_history)):
         if entropy_history[i] <= threshold:
-            return i
-            
+            return (i - peak_index) * sample_interval
+
     return None
 
 
@@ -116,7 +121,8 @@ def adaptation_time(
     entropy_history: list[float], 
     disruption_iteration: int, 
     threshold_ratio: float = 0.8,
-    sample_interval: int = 10
+    sample_interval: int = 10,
+    entropy_floor: float = 0.1
 ) -> int | None:
     """
     Iterations from disruption until entropy returns to a percentage (threshold_ratio)
@@ -129,12 +135,11 @@ def adaptation_time(
         return None
         
     pre_disruption_entropy = entropy_history[disruption_idx - 1]
-    
-    # If entropy was already 0, any recovery is 100%
-    if pre_disruption_entropy == 0:
-        threshold = 0.0001 
-    else:
-        threshold = pre_disruption_entropy * threshold_ratio
+
+    if pre_disruption_entropy < entropy_floor:
+        return None
+
+    threshold = pre_disruption_entropy * threshold_ratio
     
     # Search the array starting from the disruption point
     for i in range(disruption_idx, len(entropy_history)):
