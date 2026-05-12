@@ -14,9 +14,10 @@ class PSO:
     based on personal and swarm bests using a cost-minimization approach 
     adapted for discrete grid environments.
     """
-    def __init__(self, maze: MazeEnvironment, num_particles: int = 50, c1: float = 0.1, c2: float = 0.2):
+    def __init__(self, maze: MazeEnvironment, num_particles: int = 50, omega: float = 1.0, c1: float = 0.1, c2: float = 0.2):
         self.maze = maze
         self.num_particles = num_particles
+        self.omega = omega  # Inertia weight (fixed constant per proposal Section 4.1)
         self.c1 = c1  # Cognitive coefficient
         self.c2 = c2  # Social coefficient
         self.entropy_history: list[float] = []
@@ -70,7 +71,7 @@ class PSO:
                 dg = abs(n[0] - gb_pos[0]) + abs(n[1] - gb_pos[1])
                 
                 r1, r2 = random.random(), random.random()
-                inertia = random.random()
+                inertia = self.omega
                 
                 # The trajectory is influenced by cognitive (c1) and social (c2) components.
                 # Cost is defined as: $cost = \text{inertia} + (c_1 \cdot r_1 \cdot d_p) + (c_2 \cdot r_2 \cdot d_g)$
