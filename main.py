@@ -31,9 +31,9 @@ from visualization.plot import visualize_maze
 # ---------------------------------------------------------------------------
 
 NUM_TRIALS = 10
-NUM_SEEDS = 2      
+NUM_SEEDS = 1
 START_SEED = 1
-LIMIT_MULTIPLIER = 10 
+LIMIT_MULTIPLIER = 15
 POPULATION_SIZE = 20  
 DISRUPTION_TIME_SUDDEN_WALL = 150
 RECOVERY_THRESHOLD = 0.5
@@ -46,8 +46,8 @@ PLOT_MAZE = True
 
 TIERS = [
     # {"name": "U-Trap (Deception)",     "width": WIDTH, "height": HEIGHT, "type": "U-Trap"},
-    # {"name": "Sudden Wall (Dynamic)",  "width": WIDTH, "height": HEIGHT, "type": "Sudden Wall"},
-    {"name": "Parallel (Multimodal)",  "width": WIDTH, "height": HEIGHT, "type": "Parallel Paths"},
+    {"name": "Sudden Wall (Dynamic)",  "width": WIDTH, "height": HEIGHT, "type": "Sudden Wall"},
+    # {"name": "Parallel (Multimodal)",  "width": WIDTH, "height": HEIGHT, "type": "Parallel Paths"},
 ]
 
 ALGORITHMS_TO_RUN = [
@@ -98,22 +98,6 @@ def print_summary(
     
     successful_runs = [r for r in results if r["success"] and r["path"]]
     
-    if successful_runs:
-        actual_lengths = [len(r["path"]) - 1 for r in successful_runs]
-        optimal_lengths = [r["optimal_steps"] for r in successful_runs]
-        
-        avg_optimal_len = sum(optimal_lengths) / len(optimal_lengths)
-        best_found_len = min(actual_lengths)
-        mean_found_len = sum(actual_lengths) / len(actual_lengths)
-        
-        opt_ratios = [act / opt for act, opt in zip(actual_lengths, optimal_lengths) if opt > 0]
-        mean_opt_ratio = sum(opt_ratios) / len(opt_ratios) if opt_ratios else 1.0
-        
-        optimal_hits = sum(1 for act, opt in zip(actual_lengths, optimal_lengths) if act == opt)
-    else:
-        avg_optimal_len = best_found_len = mean_found_len = mean_opt_ratio = None
-        optimal_hits = 0
-    
     half_times = [time_to_half_entropy(h) for h in entropy_histories if time_to_half_entropy(h) is not None]
     floors = [diversity_floor(h) for h in entropy_histories if diversity_floor(h) is not None]
     means = [mean_entropy(h) for h in entropy_histories if mean_entropy(h) is not None]
@@ -144,22 +128,6 @@ def print_summary(
     print(f"  [{algo_name}]")
     print(f"    Success rate:          {sr:.0%} ({len(successful_runs)}/{len(results)})")
     print(f"    Mean iterations:       {it_str}")
-    
-    if successful_runs:
-        if num_seeds == 1:
-            # Individual seed output: Now includes the optimal length in parentheses
-            print(f"    Best found steps:      {best_found_len} ({avg_optimal_len:.0f})")
-            print(f"    Mean found steps:      {mean_found_len:.1f} ({avg_optimal_len:.0f})")
-            
-            # Re-added these lines as per your previous preference to show them for all seeds
-            print(f"    Optimal paths found:   {optimal_hits}/{len(successful_runs)} of successful runs")
-            print(f"    Path optimality:       {mean_opt_ratio:.3f}")
-        else:
-            # Overall summary output
-            print(f"    Optimal paths found:   {optimal_hits}/{len(successful_runs)} of successful runs")
-            print(f"    Path optimality:       {mean_opt_ratio:.3f}")
-    else:
-        print(f"    Path metrics:          N/A")
         
     print(f"    Time to 50% entropy:   {avg_half_time:.1f} iterations" if avg_half_time is not None else "    Time to 50% entropy:   N/A")
     print(f"    Diversity floor:       {avg_floor:.4f} bits" if avg_floor is not None else "    Diversity floor:       N/A")
@@ -256,9 +224,8 @@ def main() -> None:
                     visualize_maze(
                         maze, 
                         optimal_path=true_optimal_path, 
-                        best_found_path=best_run_path,
                         all_paths=all_trial_history,
-                        title=f"{algo_name} Final (Green=Optimal, Red=Best Found) [Seed {seed}]", 
+                        title=f"{algo_name} Final [Seed {seed}]", 
                         show=True
                     )
 
