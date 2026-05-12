@@ -31,27 +31,27 @@ from visualization.plot import visualize_maze
 # ---------------------------------------------------------------------------
 
 NUM_TRIALS = 10
-NUM_SEEDS = 10      
+NUM_SEEDS = 2      
 START_SEED = 1
 LIMIT_MULTIPLIER = 10 
-POPULATION_SIZE = 100  
+POPULATION_SIZE = 20  
 DISRUPTION_TIME_SUDDEN_WALL = 150
 RECOVERY_THRESHOLD = 0.5
 
-WIDTH = 40
-HEIGHT = 40
+WIDTH = 30
+HEIGHT = 30
 
 SHOW_ALL_PATHS = True  
-PLOT_MAZE = False 
+PLOT_MAZE = True 
 
 TIERS = [
     # {"name": "U-Trap (Deception)",     "width": WIDTH, "height": HEIGHT, "type": "U-Trap"},
-    {"name": "Sudden Wall (Dynamic)",  "width": WIDTH, "height": HEIGHT, "type": "Sudden Wall"},
-    # {"name": "Parallel (Multimodal)",  "width": WIDTH, "height": HEIGHT, "type": "Parallel Paths"},
+    # {"name": "Sudden Wall (Dynamic)",  "width": WIDTH, "height": HEIGHT, "type": "Sudden Wall"},
+    {"name": "Parallel (Multimodal)",  "width": WIDTH, "height": HEIGHT, "type": "Parallel Paths"},
 ]
 
 ALGORITHMS_TO_RUN = [
-    ("(1+1) Evolutionary Strategy", OnePlusOneES, {"backtrack": True}),
+    # ("(1+1) Evolutionary Strategy", OnePlusOneES, {"backtrack": True}),
     ("Genetic Algorithm", GeneticAlgorithm, {"pop_size": POPULATION_SIZE, "tournament_k": 5}),
     ("Particle Swarm Optimization", PSO, {"num_particles": POPULATION_SIZE, "c1": 0.1, "c2": 0.2}),
     ("Ant Colony Optimization", ACO, {"num_ants": POPULATION_SIZE, "evaporation_rate": 0.1}),
@@ -90,12 +90,9 @@ def print_summary(
     results: list[dict], 
     entropy_histories: list[list[float]], 
     disruption_iteration: int = -1, 
-    recovery_ratio: float = 0.8
+    recovery_ratio: float = 0.8,
+    num_seeds: int = 10
 ) -> None:
-    """
-    Prints a detailed performance summary including raw path lengths 
-    and averaged optimality metrics.
-    """
     sr = success_rate(results)
     mic = mean_iteration_count(results)
     
@@ -109,7 +106,6 @@ def print_summary(
         best_found_len = min(actual_lengths)
         mean_found_len = sum(actual_lengths) / len(actual_lengths)
         
-        # Calculate optimality per run to handle varying seed difficulties fairly
         opt_ratios = [act / opt for act, opt in zip(actual_lengths, optimal_lengths) if opt > 0]
         mean_opt_ratio = sum(opt_ratios) / len(opt_ratios) if opt_ratios else 1.0
         
@@ -118,7 +114,6 @@ def print_summary(
         avg_optimal_len = best_found_len = mean_found_len = mean_opt_ratio = None
         optimal_hits = 0
     
-    # Entropy metrics (Averaged across all trials)
     half_times = [time_to_half_entropy(h) for h in entropy_histories if time_to_half_entropy(h) is not None]
     floors = [diversity_floor(h) for h in entropy_histories if diversity_floor(h) is not None]
     means = [mean_entropy(h) for h in entropy_histories if mean_entropy(h) is not None]
@@ -127,7 +122,6 @@ def print_summary(
     avg_floor = sum(floors) / len(floors) if floors else None
     avg_mean_ent = sum(means) / len(means) if means else None
     
-    # Adaptation logic
     avg_adapt_time = None
     if disruption_iteration > 0:
         adapt_times = [
@@ -137,11 +131,9 @@ def print_summary(
         ]
         avg_adapt_time = sum(adapt_times) / len(adapt_times) if adapt_times else None
 
-    # ES exclusion
     if "(1+1)" in algo_name:
         avg_half_time = avg_floor = avg_mean_ent = avg_adapt_time = None
 
-    # Iteration string
     if mic == float("inf"):
         it_str = "N/A"
     elif disruption_iteration > 0:
@@ -149,18 +141,23 @@ def print_summary(
     else:
         it_str = f"{mic:.1f}"
 
-    # Output
     print(f"  [{algo_name}]")
     print(f"    Success rate:          {sr:.0%} ({len(successful_runs)}/{len(results)})")
     print(f"    Mean iterations:       {it_str}")
     
-    # Path Metrics
     if successful_runs:
-        print(f"    Optimal steps (Mean):  {avg_optimal_len:.1f}")
-        print(f"    Best found steps:      {best_found_len}")
-        print(f"    Mean found steps:      {mean_found_len:.1f}")
-        print(f"    Optimal paths found:   {optimal_hits}/{len(successful_runs)} of successful runs")
-        print(f"    Path optimality:       {mean_opt_ratio:.3f}")
+        if num_seeds == 1:
+            # Individual seed output: Now includes the optimal length in parentheses
+            print(f"    Best found steps:      {best_found_len} ({avg_optimal_len:.0f})")
+            print(f"    Mean found steps:      {mean_found_len:.1f} ({avg_optimal_len:.0f})")
+            
+            # Re-added these lines as per your previous preference to show them for all seeds
+            print(f"    Optimal paths found:   {optimal_hits}/{len(successful_runs)} of successful runs")
+            print(f"    Path optimality:       {mean_opt_ratio:.3f}")
+        else:
+            # Overall summary output
+            print(f"    Optimal paths found:   {optimal_hits}/{len(successful_runs)} of successful runs")
+            print(f"    Path optimality:       {mean_opt_ratio:.3f}")
     else:
         print(f"    Path metrics:          N/A")
         
@@ -176,13 +173,18 @@ def print_summary(
 def main() -> None:
     for tier in TIERS:
         print(f"=== Testing: {tier['name']} (Seeds {START_SEED} to {START_SEED + NUM_SEEDS - 1}) ===")
-        print("-" * 50)
+        print("=" * 60)
         
-        algo_data = {algo_name: {"results": [], "entropy": []} for algo_name, _, _ in ALGORITHMS_TO_RUN}
+        # This dictionary holds the aggregate data across ALL seeds
+        overall_algo_data = {algo_name: {"results": [], "entropy": []} for algo_name, _, _ in ALGORITHMS_TO_RUN}
         current_disruption = DISRUPTION_TIME_SUDDEN_WALL if tier["type"] == "Sudden Wall" else -1
 
         for seed in range(START_SEED, START_SEED + NUM_SEEDS):
+            print(f"\n--- Running Seed {seed} ---")
             maze = generate_maze(tier["width"], tier["height"], seed=seed, maze_type=tier["type"])
+            
+            # This dictionary holds the data JUST for the current seed
+            seed_algo_data = {algo_name: {"results": [], "entropy": []} for algo_name, _, _ in ALGORITHMS_TO_RUN}
             
             # Reset seeds for trial stochasticity
             random.seed()
@@ -216,8 +218,12 @@ def main() -> None:
                 for r in results:
                     r["optimal_steps"] = true_optimal_steps
                     
-                algo_data[algo_name]["results"].extend(results)
-                algo_data[algo_name]["entropy"].extend(all_entropy_histories)
+                # Append to BOTH the specific seed data and the overall aggregate data
+                seed_algo_data[algo_name]["results"].extend(results)
+                seed_algo_data[algo_name]["entropy"].extend(all_entropy_histories)
+                
+                overall_algo_data[algo_name]["results"].extend(results)
+                overall_algo_data[algo_name]["entropy"].extend(all_entropy_histories)
                 
                 # Visualization logic for the first seed of each tier
                 if PLOT_MAZE and seed == START_SEED:
@@ -225,7 +231,6 @@ def main() -> None:
                     all_trial_snapshots = [] 
                     best_disruption_iteration = None
 
-                    # Find the best path actually achieved by the algorithm in this set of trials
                     successful_paths = [r["path"] for r in results if r["success"] and r["path"]]
                     best_run_path = min(successful_paths, key=len) if successful_paths else None
 
@@ -237,7 +242,6 @@ def main() -> None:
                         if best_disruption_iteration is None: 
                             best_disruption_iteration = r.get("disruption_iteration")
 
-                    # 1. Visualization for the Sudden Wall disruption point (T=100)
                     if tier["type"] == "Sudden Wall" and hasattr(maze, 'dynamic_wall') and maze.dynamic_wall:
                         maze.remove_wall(maze.dynamic_wall[0], maze.dynamic_wall[1])
                         visualize_maze(
@@ -249,25 +253,41 @@ def main() -> None:
                         )
                         maze.add_wall(maze.dynamic_wall[0], maze.dynamic_wall[1])
 
-                    # 2. Final Result Visualization (Red = Optimal, Green = Best Found)
                     visualize_maze(
                         maze, 
                         optimal_path=true_optimal_path, 
                         best_found_path=best_run_path,
                         all_paths=all_trial_history,
-                        title=f"{algo_name} Final (Red=Opt, Green=Best Found) [Seed {seed}]", 
+                        title=f"{algo_name} Final (Green=Optimal, Red=Best Found) [Seed {seed}]", 
                         show=True
                     )
 
-        # Print aggregate summary across all seeds/trials for the current Tier
+            # --- INDIVIDUAL SEED SUMMARY ---
+            print(f"\n>>> Results Summary for Seed {seed} <<<")
+            for algo_name, _, _ in ALGORITHMS_TO_RUN:
+                print_summary(
+                    tier["name"], 
+                    algo_name, 
+                    seed_algo_data[algo_name]["results"], 
+                    seed_algo_data[algo_name]["entropy"], 
+                    current_disruption, 
+                    recovery_ratio=RECOVERY_THRESHOLD,
+                    num_seeds=1  # Shows simplified metrics
+                )
+                
+        # --- OVERALL TIER SUMMARY ---
+        print("\n============================================================")
+        print(f"=== OVERALL RESULTS FOR {tier['name'].upper()} (ALL {NUM_SEEDS} SEEDS) ===")
+        print("============================================================")
         for algo_name, _, _ in ALGORITHMS_TO_RUN:
             print_summary(
                 tier["name"], 
                 algo_name, 
-                algo_data[algo_name]["results"], 
-                algo_data[algo_name]["entropy"], 
+                overall_algo_data[algo_name]["results"], 
+                overall_algo_data[algo_name]["entropy"], 
                 current_disruption, 
-                recovery_ratio=RECOVERY_THRESHOLD
+                recovery_ratio=RECOVERY_THRESHOLD,
+                num_seeds=NUM_SEEDS 
             )
                     
 if __name__ == "__main__":
