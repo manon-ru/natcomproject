@@ -1,0 +1,4 @@
+[2026-05-12] adaptation_time entropy floor fix
+- Added entropy_floor parameter (default 0.1) to adaptation_time.
+- Returns None when pre_disruption_entropy < entropy_floor.
+- Verified QA: floor case OK; positive case OK result=40.
