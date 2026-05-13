@@ -1,0 +1,21 @@
+total 1576
+-rw-r--r--@ 1 robert  staff    26K May 13 17:10 adaptation_time_sudden_wall.png
+-rw-r--r--@ 1 robert  staff    43K May 13 17:10 entropy_parallel_paths_pop150.png
+-rw-r--r--@ 1 robert  staff    52K May 13 17:10 entropy_parallel_paths_pop20.png
+-rw-r--r--@ 1 robert  staff    47K May 13 17:10 entropy_parallel_paths_pop50.png
+-rw-r--r--@ 1 robert  staff    57K May 13 17:10 entropy_sudden_wall_pop150.png
+-rw-r--r--@ 1 robert  staff    64K May 13 17:10 entropy_sudden_wall_pop20.png
+-rw-r--r--@ 1 robert  staff    60K May 13 17:10 entropy_sudden_wall_pop50.png
+-rw-r--r--@ 1 robert  staff    54K May 13 17:10 entropy_u_trap_pop150.png
+-rw-r--r--@ 1 robert  staff    70K May 13 17:10 entropy_u_trap_pop20.png
+-rw-r--r--@ 1 robert  staff    62K May 13 17:10 entropy_u_trap_pop50.png
+-rw-r--r--@ 1 robert  staff    66K May 13 17:10 ga_iteration_budget.png
+-rw-r--r--@ 1 robert  staff    37K May 13 17:10 ga_sensitivity.png
+-rw-r--r--@ 1 robert  staff     0B May 13 17:10 MANIFEST.txt
+-rw-r--r--@ 1 robert  staff    24K May 13 17:10 path_optimality_parallel_paths.png
+-rw-r--r--@ 1 robert  staff    20K May 13 17:10 path_optimality_sudden_wall.png
+-rw-r--r--@ 1 robert  staff    19K May 13 17:10 path_optimality_u_trap.png
+-rw-r--r--@ 1 robert  staff    19K May 13 17:10 success_rate_parallel_paths.png
+-rw-r--r--@ 1 robert  staff    19K May 13 17:10 success_rate_sudden_wall.png
+-rw-r--r--@ 1 robert  staff    18K May 13 17:10 success_rate_u_trap.png
+-rw-r--r--@ 1 robert  staff   2.2K May 13 17:10 summary_table.tex
