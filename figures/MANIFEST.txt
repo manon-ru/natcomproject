@@ -11,7 +11,7 @@ total 1576
 -rw-r--r--@ 1 robert  staff    62K May 13 17:10 entropy_u_trap_pop50.png
 -rw-r--r--@ 1 robert  staff    66K May 13 17:10 ga_iteration_budget.png
 -rw-r--r--@ 1 robert  staff    37K May 13 17:10 ga_sensitivity.png
--rw-r--r--@ 1 robert  staff     0B May 13 17:10 MANIFEST.txt
+-rw-r--r--@ 1 robert  staff     0B May 13 17:12 MANIFEST.txt
 -rw-r--r--@ 1 robert  staff    24K May 13 17:10 path_optimality_parallel_paths.png
 -rw-r--r--@ 1 robert  staff    20K May 13 17:10 path_optimality_sudden_wall.png
 -rw-r--r--@ 1 robert  staff    19K May 13 17:10 path_optimality_u_trap.png
