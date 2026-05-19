@@ -1,0 +1,9 @@
+=== Pilot Run Summary ===
+Pilot: 27 runs in 21.3s wall-clock
+Workers: 8
+Per-cell avg: 0.79s
+
+=== Projection for Full Run ===
+Full factorial: 2,700 runs (3 algos × 3 mazes × 3 pop sizes × 10 instances × 10 trials)
+Projected wall-clock: ~2130s ≈ 35.5 minutes (linear extrapolation)
+Status: OK — well below 4h gate threshold.

@@ -1,0 +1,28 @@
+═══ GA Sensitivity Sweep ═══
+  Maze:               U-Trap
+  Mutation rates:     [0.01, 0.05, 0.1, 0.3]
+  Chromosome lengths: [80, 160]
+  Trials per cell:    10
+  Instances per cell: 1
+  Total runs:         80
+
+  [20/80] 12.9s
+  [40/80] 24.5s
+  [60/80] 34.7s
+  [80/80] 47.7s
+
+Completed 80 runs in 47.9s
+
+CSV: results/ga_sensitivity.csv (80 rows)
+
+═══ Success Rate (U-Trap) ═══
+  mut\CL       80    160
+  0.01         0%     0%
+  0.05         0%     0%
+  0.10         0%     0%
+  0.30         0%     0%
+
+Figure: figures/ga_sensitivity.png
+
+→ Blue box highlights the proposal-spec configuration (μ=0.3, L=160).
+→ Compare against lower mutation rates and shorter chromosomes to see the encoding sensitivity.

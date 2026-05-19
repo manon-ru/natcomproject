@@ -1,3 +1,4 @@
+# Scratch tool — do NOT use for paper figures. The proposal figures are produced by scripts/figures.py.
 """
 demo.py — Visual preview of the project's maze environments and analytics.
 
@@ -33,8 +34,8 @@ TIERS = [
     {"name": "Maze 3: Parallel Paths", "width": 20, "height": 20, "seed": 2026, "maze_type": "Parallel Paths"},
 ]
 
-ALGO_NAMES = ["Baseline GA", "GA", "PSO", "ACO"]
-ALGO_COLORS = ["#e07b39", "#3a86ff", "#8ecae6", "#57cc99"]
+ALGO_NAMES = ["GA", "PSO", "ACO"]
+ALGO_COLORS = ["#3a86ff", "#8ecae6", "#57cc99"]
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +90,6 @@ def _dummy_entropy_curves(n_points: int = 50) -> dict[str, np.ndarray]:
     """Synthetic entropy curves — illustrative shapes only."""
     t = np.linspace(0, 1, n_points)
     return {
-        "Baseline GA": 0.3 + 0.7 * np.exp(-1.2 * t) + np.random.default_rng(0).normal(0, 0.02, n_points),
         "GA":          0.2 + 0.8 * np.exp(-2.5 * t) + np.random.default_rng(1).normal(0, 0.02, n_points),
         "PSO":         0.1 + 0.9 * np.exp(-5.0 * t ** 0.5) + np.random.default_rng(2).normal(0, 0.02, n_points),
         "ACO":         0.4 + 0.6 * (1 - t) ** 1.8 + np.random.default_rng(3).normal(0, 0.02, n_points),
