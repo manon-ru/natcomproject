@@ -209,3 +209,12 @@ results/
 figures/
 figures_quick/
 .sisyphus/evidence/
+
+# macOS
+.DS_Store
+
+# JetBrains IDEs
+.idea/
+
+# OpenCode agent work files (drafts, plans, evidence, etc.)
+.omo/
