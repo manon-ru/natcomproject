@@ -27,12 +27,13 @@ Maze types:
                                     to G that zigzag through the interior:
                                       Path A stays strictly above y = x.
                                       Path B stays strictly below y = x,
-                                              with one small +2-cell detour
-                                              near the middle.
+                                              with one small +6-cell detour
+                                              placed near the goal.
                                     They share only S and G. Path A has
-                                    length W+H-1; path B has length W+H+1.
-                                    DFS dead-end branches decorate the
-                                    interior so no third S->G route exists.
+                                    length W+H-1; path B has length W+H+5
+                                    (with the default depth-3 detour). DFS
+                                    dead-end branches decorate the interior
+                                    so no third S->G route exists.
 """
 import random
 from collections import deque
@@ -230,44 +231,81 @@ def _generate_random_non_crossing_paths(N):
     return path_a, path_b
 
 
-def _try_insert_detour_on_b(path_a, path_b, N):
-    """Insert a +2 cell detour on path B at a random feasible location.
+DETOUR_DEPTH = 3                    # Detour adds 2 * DETOUR_DEPTH = 6 extra cells.
+DETOUR_NEAR_END_STEPS = 10          # Detour location restricted to last K interior steps of B.
 
-    For each interior step i where B moves R from (bx, by) to (bx+1, by) we
-    consider replacing that single step with three steps D, R, U through cells
-    (bx, by+1) and (bx+1, by+1). Symmetrically for D-moves. A candidate is
-    feasible iff both new cells are inside the grid, not on path A, and not
-    already on path B. We pick one feasible candidate at random; if none
-    exists path B is returned unchanged.
+
+def _detour_cells(path_b, i, depth, dir_sign):
+    """Cells to insert between path_b[i] and path_b[i+1] for a depth-d perpendicular detour.
+
+    For an R-step (bx, by) -> (bx+1, by), the detour goes perpendicularly in the y
+    direction (down if dir_sign=+1, up if dir_sign=-1), traverses 2*depth+1 edges,
+    and visits 2*depth new cells. Symmetric for a D-step (perpendicular in x).
+    Returns the ordered list of 2*depth cells to splice in, or None if path_b[i] ->
+    path_b[i+1] is not a unit R/D move.
+    """
+    bx, by = path_b[i]
+    nx, ny = path_b[i + 1]
+    cells = []
+    if nx == bx + 1 and ny == by:
+        for k in range(1, depth + 1):
+            cells.append((bx, by + dir_sign * k))
+        for k in range(depth, 0, -1):
+            cells.append((bx + 1, by + dir_sign * k))
+        return cells
+    if nx == bx and ny == by + 1:
+        for k in range(1, depth + 1):
+            cells.append((bx + dir_sign * k, by))
+        for k in range(depth, 0, -1):
+            cells.append((bx + dir_sign * k, by + 1))
+        return cells
+    return None
+
+
+def _try_insert_detour_on_b(path_a, path_b, N,
+                            depth=DETOUR_DEPTH,
+                            near_end_steps=DETOUR_NEAR_END_STEPS):
+    """Insert a depth-d perpendicular detour on path B near the goal.
+
+    A depth-d detour replaces a single unit step of B with a rectangular excursion
+    of 2*d+1 steps, adding exactly 2*d cells to path B. With the default depth=3
+    the detour visits 6 extra cells. Candidates are restricted to the last
+    `near_end_steps` interior positions of path B so the detour sits near the goal,
+    where the proposal's "small detour near the end of one route" places it.
+    A candidate is feasible iff every detour cell is inside the grid, not on path
+    A, and not on path B. If no near-end candidate fits at depth d, we try depth
+    d-1 in the same near-end window. If that also fails, path B is returned
+    unchanged and the caller may retry path generation.
     """
     cells_on_a = set(path_a)
     cells_on_b = set(path_b)
 
-    candidates = []
-    for i in range(1, len(path_b) - 1):
-        bx, by = path_b[i]
-        nx, ny = path_b[i + 1]
-        if nx == bx + 1 and ny == by:
-            d1, d2 = (bx, by + 1), (bx + 1, by + 1)
-        elif nx == bx and ny == by + 1:
-            d1, d2 = (bx + 1, by), (bx + 1, by + 1)
-        else:
-            continue
-        if not (0 <= d1[0] < N and 0 <= d1[1] < N):
-            continue
-        if not (0 <= d2[0] < N and 0 <= d2[1] < N):
-            continue
-        if d1 in cells_on_a or d2 in cells_on_a:
-            continue
-        if d1 in cells_on_b or d2 in cells_on_b:
-            continue
-        candidates.append((i, d1, d2))
+    def is_feasible(cells):
+        if cells is None:
+            return False
+        for c in cells:
+            if not (0 <= c[0] < N and 0 <= c[1] < N):
+                return False
+            if c in cells_on_a or c in cells_on_b:
+                return False
+        return True
 
-    if not candidates:
-        return path_b
+    n_interior = len(path_b) - 2
+    window = min(near_end_steps, n_interior)
+    start_idx = len(path_b) - 1 - window      # inclusive lower bound on candidate i
 
-    i, d1, d2 = random.choice(candidates)
-    return path_b[: i + 1] + [d1, d2] + path_b[i + 1 :]
+    for try_depth in range(depth, 0, -1):
+        candidates = []
+        for i in range(start_idx, len(path_b) - 1):
+            for dir_sign in (+1, -1):
+                cells = _detour_cells(path_b, i, try_depth, dir_sign)
+                if is_feasible(cells):
+                    candidates.append((i, cells))
+        if candidates:
+            i, cells = random.choice(candidates)
+            return path_b[: i + 1] + cells + path_b[i + 1 :]
+
+    return path_b
 
 
 def _connected_components(cells, W, H):
@@ -296,8 +334,14 @@ def _build_parallel_paths(maze, W, H):
         raise ValueError("Parallel Paths currently requires a square maze (W == H).")
     N = W
 
-    path_a, path_b = _generate_random_non_crossing_paths(N)
-    path_b = _try_insert_detour_on_b(path_a, path_b, N)
+    # Retry path generation until a near-end detour fits. Empirically 1-2 attempts
+    # suffice for N=40 because most random shuffles leave room near (N-1, N-1).
+    max_attempts = 200
+    for _ in range(max_attempts):
+        path_a, path_b_base = _generate_random_non_crossing_paths(N)
+        path_b = _try_insert_detour_on_b(path_a, path_b_base, N)
+        if len(path_b) > len(path_b_base):
+            break
     assert path_a[0] == (0, 0) and path_a[-1] == (N - 1, N - 1)
     assert path_b[0] == (0, 0) and path_b[-1] == (N - 1, N - 1)
 

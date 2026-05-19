@@ -79,10 +79,11 @@ for maze_type in MAZE_TYPES:
             path_a, path_b = _paths_for_parallel(maze)
             la = (len(path_a) - 1) if path_a else None
             lb = (len(path_b) - 1) if path_b else None
+            detour_cells = (lb - la) if (la is not None and lb is not None) else None
             title = (
                 f"Parallel Paths {SIZE}x{SIZE}  seed={seed}   "
                 f"path A (green) = {la} steps   |   "
-                f"path B with +2 detour (orange) = {lb} steps   |   "
+                f"path B with +{detour_cells} detour (orange) = {lb} steps   |   "
                 f"random non-crossing routes"
             )
             fig = visualize_maze(
