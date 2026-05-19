@@ -7,12 +7,22 @@ Convention shared by all maze types:
 
 Maze types:
 
-  U-Trap          Deception.        Plain perfect DFS maze. Heuristic-greedy
-                                    agents are attracted toward the goal but
-                                    hit the maze's natural dead-ends and must
-                                    backtrack. We do NOT carve a special
-                                    chamber - the trap effect emerges from
-                                    the natural dead-ends of the DFS maze.
+  U-Trap          Deception.        A random monotonic R/D corridor from S to
+                                    T_end = (W-1, H-2). T_end is one cell
+                                    above G but the edge to G is permanently
+                                    walled, so the heuristic-monotonic trap
+                                    ends one cell short of the goal. The grid
+                                    off the trap is DFS-carved as one or two
+                                    connected components, and the only edge
+                                    from S into the G-containing component is
+                                    the gateway (0,0)-(0,1); an agent stuck
+                                    at T_end therefore has to backtrack the
+                                    entire trap against the heuristic gradient
+                                    before it can enter the real path. A
+                                    second DFS-carved dead wedge off the trap
+                                    is reachable through one mid-trap gateway
+                                    and cannot reach G, so it adds wasted
+                                    search without shortcutting the trap.
 
   Sudden Wall     Non-stationarity. Perfect DFS maze plus one extra opening
                                     that creates a shortcut. The shortcut
@@ -108,39 +118,68 @@ def _bfs_distances(maze, source):
 
 
 # Maze 1: U-Trap (deception).
-# A real 7-cell U-shaped corridor placed near the goal. The agent enters at
-# the top of the left arm, descends, crosses the bottom, ascends the right
-# arm, and hits a dead-end. The bottom-right corner of the U is the closest
-# cell to the goal in Manhattan distance, but it has no exit toward G - to
-# escape, the agent must back-track up the right arm and out, increasing
-# its distance to G (i.e. moving against the heuristic gradient).
-# The rest of the maze is a normal DFS perfect maze that does NOT touch the
-# trap, so the trap looks like a natural 7-cell dead-end branch.
+# The trap is a random monotonic R/D walk from S to T_end = (W-1, H-2), one
+# cell above G. The edge T_end -> G is permanently walled, so the trap dead-
+# ends one cell short of the goal. Every step along the trap reduces Manhattan
+# distance to G by exactly 1, so any heuristic-greedy agent walks straight in.
+#
+# The first move is forced to R. This guarantees S's only non-trap neighbour
+# is (0, 1) and that (0, 1) is in the same connected component as G (the
+# "above-trap" region plus the bottom row). The gateway (0, 0) <-> (0, 1) is
+# the only edge from S into the G-component, and an agent stuck at T_end must
+# back-track the entire trap against the heuristic gradient before it can
+# enter the real S->G path.
+#
+# A random monotonic trap also creates a dead "above-trap" wedge in the
+# upper-right of the grid that cannot reach G. We DFS-carve that wedge into a
+# perfect maze and open a single gateway from mid-trap into it; the wedge then
+# looks like an ordinary maze region but is a dead end with respect to G, so
+# any time an agent spends inside it is wasted search.
 
 def _build_u_trap(maze, W, H):
-    a, b = W - 5, H - 5
-    u_path = [
-        (a, b),              # entrance (top of left arm)
-        (a, b + 1),          # left arm
-        (a, b + 2),          # bottom-left corner
-        (a + 1, b + 2),      # bottom middle
-        (a + 2, b + 2),      # bottom-right corner (closest to G)
-        (a + 2, b + 1),      # right arm
-        (a + 2, b),          # dead-end (top of right arm)
-    ]
-    trap_cells = set(u_path)
+    T_end = (W - 1, H - 2)
 
-    rest_cells = {(x, y) for y in range(H) for x in range(W)
-                  if (x, y) not in trap_cells}
-    _carve_dfs_in_cells(maze, rest_cells)
+    interior_moves = ["R"] * (W - 2) + ["D"] * (H - 2)
+    random.shuffle(interior_moves)
+    moves = ["R"] + interior_moves
+    trap_path = [(0, 0)]
+    x, y = 0, 0
+    for m in moves:
+        if m == "R":
+            x += 1
+        else:
+            y += 1
+        trap_path.append((x, y))
+    assert trap_path[-1] == T_end
 
-    for i in range(len(u_path) - 1):
-        maze.remove_wall(u_path[i], u_path[i + 1])
+    for i in range(len(trap_path) - 1):
+        maze.remove_wall(trap_path[i], trap_path[i + 1])
 
-    if b - 1 >= 0:
-        maze.remove_wall(u_path[0], (a, b - 1))
+    trap_set = set(trap_path)
+    non_trap = [(x, y) for y in range(H) for x in range(W) if (x, y) not in trap_set]
+    components = _connected_components(non_trap, W, H)
 
-    maze.trap_path = u_path
+    for comp in components:
+        _carve_dfs_in_cells(maze, comp)
+
+    G_component = next(c for c in components if maze.goal in c)
+    assert (0, 1) in G_component
+    maze.remove_wall((0, 0), (0, 1))
+
+    for comp in components:
+        if comp is G_component:
+            continue
+        candidates = []
+        for cell in comp:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nb = (cell[0] + dx, cell[1] + dy)
+                if nb in trap_set and nb != T_end:
+                    candidates.append((cell, nb))
+        if candidates:
+            cell, nb = random.choice(candidates)
+            maze.remove_wall(cell, nb)
+
+    maze.trap_path = trap_path
 
 
 # Maze 2: Sudden Wall (non-stationarity).

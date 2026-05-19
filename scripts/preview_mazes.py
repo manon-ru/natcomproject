@@ -101,10 +101,11 @@ for maze_type in MAZE_TYPES:
             optimal = maze.shortest_path()
             opt_len = (len(optimal) - 1) if optimal else None
             trap = maze.trap_path
+            trap_steps = len(trap) - 1
             title = (
                 f"U-Trap {SIZE}x{SIZE}  seed={seed}   "
-                f"optimal path (green) = {opt_len} steps   |   "
-                f"U-shaped dead-end trap (orange) = {len(trap)} cells near G"
+                f"real path R (green) = {opt_len} steps   |   "
+                f"trap corridor (orange) = {trap_steps} steps, dead-ends 1 cell from G"
             )
             fig = visualize_maze(
                 maze,
