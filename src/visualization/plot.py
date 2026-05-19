@@ -4,14 +4,22 @@ from maze.environment import MazeEnvironment
 
 def visualize_maze(
     maze: MazeEnvironment,
-    optimal_path: list[tuple] | None = None, 
+    optimal_path: list[tuple] | None = None,
     all_paths: list[list[tuple]] | None = None,
+    alt_path: list[tuple] | None = None,
+    highlight_wall: tuple | None = None,
     title: str = "Maze",
     show: bool = True,
-    max_dim: int = 10
+    max_dim: int = 10,
 ) -> plt.Figure:
-    """
-    Render the maze with faint histories (blue) and the absolute optimal ground truth (green).
+    """Render the maze with optional paths and highlighted walls.
+
+    `optimal_path` is drawn in lime green (primary route).
+    `alt_path`     is drawn in orange    (secondary route, e.g. long path
+                                           after a Sudden Wall is added or
+                                           the second equal route in
+                                           Parallel Paths).
+    `highlight_wall` is drawn in red (e.g. the Sudden Wall location).
     """
     aspect_ratio = maze.width / maze.height
     if aspect_ratio > 1:
@@ -20,14 +28,13 @@ def visualize_maze(
     else:
         fig_height = max_dim
         fig_width = max_dim * aspect_ratio
-    
+
     fig, ax = plt.subplots(figsize=(max(5, fig_width), max(5, fig_height)))
 
     base_scale = 10 / max(maze.width, maze.height)
     line_weight = max(1, 3 * base_scale)
     font_size = max(8, 14 * base_scale)
 
-    # Draw walls
     for y in range(maze.height + 1):
         for x in range(maze.width):
             if maze.horizontal_walls[y, x]:
@@ -37,7 +44,6 @@ def visualize_maze(
             if maze.vertical_walls[y, x]:
                 ax.plot([x - 0.5, x - 0.5], [y - 0.5, y + 0.5], color="black", lw=line_weight)
 
-    # Layer 1: Faint blue cloud of ALL paths (zorder=1)
     if all_paths:
         for history_list in all_paths:
             if history_list and len(history_list) > 1:
@@ -45,18 +51,32 @@ def visualize_maze(
                 ys = [node[1] for node in history_list]
                 ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
 
-    # Layer 2: Absolute Optimal Ground Truth in GREEN (zorder=2)
+    if alt_path and len(alt_path) > 1:
+        xs = [p[0] for p in alt_path]
+        ys = [p[1] for p in alt_path]
+        ax.plot(xs, ys, color="orange", lw=line_weight * 1.5, alpha=0.75, zorder=1.5)
+
     if optimal_path and len(optimal_path) > 1:
         xs = [p[0] for p in optimal_path]
         ys = [p[1] for p in optimal_path]
         ax.plot(xs, ys, color="lime", lw=line_weight * 1.5, alpha=0.8, zorder=2)
 
-    # Markers (S and G use zorder=3 to stay on very top)
+    if highlight_wall is not None:
+        (wx1, wy1), (wx2, wy2) = highlight_wall
+        if wx1 == wx2:
+            wy = max(wy1, wy2)
+            ax.plot([wx1 - 0.5, wx1 + 0.5], [wy - 0.5, wy - 0.5],
+                    color="red", lw=line_weight * 3.0, solid_capstyle="round", zorder=2.5)
+        else:
+            wx = max(wx1, wx2)
+            ax.plot([wx - 0.5, wx - 0.5], [wy1 - 0.5, wy1 + 0.5],
+                    color="red", lw=line_weight * 3.0, solid_capstyle="round", zorder=2.5)
+
     sx, sy = maze.start
     gx, gy = maze.goal
-    ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center", 
+    ax.text(sx, sy, "S", color="green", weight="bold", ha="center", va="center",
             fontsize=font_size, zorder=3)
-    ax.text(gx, gy, "G", color="darkred", weight="bold", ha="center", va="center", 
+    ax.text(gx, gy, "G", color="darkred", weight="bold", ha="center", va="center",
             fontsize=font_size, zorder=3)
 
     ax.set_aspect("equal")

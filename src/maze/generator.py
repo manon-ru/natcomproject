@@ -1,19 +1,18 @@
 """
 Maze generators for Group 27 NatComp project.
 
-All mazes share the same convention:
+Convention shared by all maze types:
   - Start: top-left corner (0, 0)
   - Goal:  bottom-right corner (W-1, H-1)
 
-Three maze types, each designed to isolate one environmental challenge:
+Maze types:
 
-  U-Trap          Deception.        Normal perfect maze plus a U-shaped
-                                    dead-end chamber carved near the goal.
-                                    The chamber opens to the NW (start
-                                    direction), so a heuristic-greedy agent
-                                    heading SE enters the chamber and gets
-                                    stuck against its sealed S/E walls.
-                                    The real path to the goal goes around.
+  U-Trap          Deception.        Plain perfect DFS maze. Heuristic-greedy
+                                    agents are attracted toward the goal but
+                                    hit the maze's natural dead-ends and must
+                                    backtrack. We do NOT carve a special
+                                    chamber - the trap effect emerges from
+                                    the natural dead-ends of the DFS maze.
 
   Sudden Wall     Non-stationarity. Perfect DFS maze plus one extra opening
                                     that creates a shortcut. The shortcut
@@ -24,16 +23,16 @@ Three maze types, each designed to isolate one environmental challenge:
                                     the population onto the original (long)
                                     path.
 
-  Parallel Paths  Multimodality.    Two corridors of exactly equal length
-                                    from S to G: corridor A along the
-                                    left + bottom edges, corridor B along
-                                    the top + right edges. The interior
-                                    is split along the diagonal into two
-                                    DFS-decorated regions: one hangs off
-                                    corridor B as dead-end branches, the
-                                    other hangs off corridor A. Total
-                                    S-to-G simple paths: exactly 2,
-                                    same length.
+  Parallel Paths  Multimodality.    Two monotonic staircase routes from S
+                                    to G that zigzag through the interior:
+                                      Path A stays strictly above y = x.
+                                      Path B stays strictly below y = x,
+                                              with one small +2-cell detour
+                                              near the middle.
+                                    They share only S and G. Path A has
+                                    length W+H-1; path B has length W+H+1.
+                                    DFS dead-end branches decorate the
+                                    interior so no third S->G route exists.
 """
 import random
 from collections import deque
@@ -42,10 +41,6 @@ import numpy as np
 
 from maze.environment import MazeEnvironment
 
-
-# ---------------------------------------------------------------------------
-# DFS helpers
-# ---------------------------------------------------------------------------
 
 def _carve_dfs_rect(maze, x1, x2, y1, y2):
     """Randomized DFS to carve a perfect maze inside rectangle [x1, x2) x [y1, y2)."""
@@ -111,72 +106,47 @@ def _bfs_distances(maze, source):
     return dist
 
 
-# ---------------------------------------------------------------------------
-# Maze 1: U-Trap (deception)
-# ---------------------------------------------------------------------------
+# Maze 1: U-Trap (deception).
+# A real 7-cell U-shaped corridor placed near the goal. The agent enters at
+# the top of the left arm, descends, crosses the bottom, ascends the right
+# arm, and hits a dead-end. The bottom-right corner of the U is the closest
+# cell to the goal in Manhattan distance, but it has no exit toward G - to
+# escape, the agent must back-track up the right arm and out, increasing
+# its distance to G (i.e. moving against the heuristic gradient).
+# The rest of the maze is a normal DFS perfect maze that does NOT touch the
+# trap, so the trap looks like a natural 7-cell dead-end branch.
 
 def _build_u_trap(maze, W, H):
-    """Carve a perfect maze with a U-shaped dead-end chamber near the goal.
+    a, b = W - 5, H - 5
+    u_path = [
+        (a, b),              # entrance (top of left arm)
+        (a, b + 1),          # left arm
+        (a, b + 2),          # bottom-left corner
+        (a + 1, b + 2),      # bottom middle
+        (a + 2, b + 2),      # bottom-right corner (closest to G)
+        (a + 2, b + 1),      # right arm
+        (a + 2, b),          # dead-end (top of right arm)
+    ]
+    trap_cells = set(u_path)
 
-    The chamber lies just NW of the goal. It is internally hollow, sealed on
-    its S, E and N sides, and connected to the rest of the maze by a single
-    opening on its W side at the NW corner of the chamber. A heuristic-greedy
-    agent heading SE from start runs straight into this opening, enters the
-    chamber, and finds the S/E exits walled off; the real path to the goal
-    wraps around the chamber's south and east sides.
-    """
-    # Chamber size and location. Leave 1-cell margin between chamber and the
-    # E/S edges of the maze so the goal corner stays outside the chamber and
-    # there is a "go-around" corridor.
-    trap_w = max(4, W // 5)
-    trap_h = max(4, H // 5)
-    trap_x2 = W - 1            # exclusive; chamber spans columns [trap_x1, trap_x2)
-    trap_y2 = H - 1            # chamber spans rows [trap_y1, trap_y2)
-    trap_x1 = trap_x2 - trap_w
-    trap_y1 = trap_y2 - trap_h
+    rest_cells = {(x, y) for y in range(H) for x in range(W)
+                  if (x, y) not in trap_cells}
+    _carve_dfs_in_cells(maze, rest_cells)
 
-    # Cells inside the chamber, marked so the main DFS won't enter them.
-    trap_cells = {(x, y) for x in range(trap_x1, trap_x2)
-                          for y in range(trap_y1, trap_y2)}
-    outside_cells = {(x, y) for x in range(W) for y in range(H)
-                            if (x, y) not in trap_cells}
+    for i in range(len(u_path) - 1):
+        maze.remove_wall(u_path[i], u_path[i + 1])
 
-    # 1. Carve a perfect maze over everything outside the chamber.
-    _carve_dfs_in_cells(maze, outside_cells)
+    if b - 1 >= 0:
+        maze.remove_wall(u_path[0], (a, b - 1))
 
-    # 2. Open the chamber interior (remove all internal walls).
-    for y in range(trap_y1, trap_y2):
-        for x in range(trap_x1, trap_x2):
-            if x + 1 < trap_x2:
-                maze.remove_wall((x, y), (x + 1, y))
-            if y + 1 < trap_y2:
-                maze.remove_wall((x, y), (x, y + 1))
-
-    # 3. Single entrance: the NW corner cell of the chamber connects west to
-    #    the outside maze. All other chamber boundary walls remain solid, so
-    #    the chamber is a dead-end pocket.
-    maze.remove_wall((trap_x1, trap_y1), (trap_x1 - 1, trap_y1))
+    maze.trap_path = u_path
 
 
-# ---------------------------------------------------------------------------
-# Maze 2: Sudden Wall (non-stationarity)
-# ---------------------------------------------------------------------------
+# Maze 2: Sudden Wall (non-stationarity).
+# DFS perfect maze + one added shortcut. The added-back wall blocks the
+# shortcut at iteration T=100, forcing the long path.
 
 def _build_sudden_wall(maze, W, H):
-    """Perfect maze with one added shortcut.
-
-    Strategy:
-      1. Generate a perfect DFS maze. The unique S->G path is L_long cells.
-      2. For every still-standing wall between two reachable cells, compute
-         what S->G length we would get if we removed it, using BFS distances
-         from S and G in the current maze.
-      3. Remove the wall that yields the biggest reduction. Now there are
-         two routes: the new short path (going through the removed wall) and
-         the original long path.
-      4. Record that wall as `maze.dynamic_wall`. At iteration T = 100 the
-         runner adds it back, which collapses the short path and forces the
-         population onto the long alternative.
-    """
     _carve_dfs_rect(maze, 0, W, 0, H)
 
     d_S = _bfs_distances(maze, maze.start)
@@ -185,8 +155,6 @@ def _build_sudden_wall(maze, W, H):
 
     best_len = L_long
     best_wall = None
-    # Iterate over each cell and its east / south neighbour. This visits every
-    # wall exactly once.
     for y in range(H):
         for x in range(W):
             for dx, dy in ((1, 0), (0, 1)):
@@ -197,8 +165,6 @@ def _build_sudden_wall(maze, W, H):
                     continue
                 a = (x, y)
                 b = (nx, ny)
-                # Length of shortest S->G path that uses the new edge a-b
-                # exactly once, in either direction.
                 cand = min(
                     d_S.get(a, float("inf")) + 1 + d_G.get(b, float("inf")),
                     d_S.get(b, float("inf")) + 1 + d_G.get(a, float("inf")),
@@ -208,99 +174,183 @@ def _build_sudden_wall(maze, W, H):
                     best_wall = (a, b)
 
     if best_wall is None:
-        # Pathological case: no shortcut exists. Leave maze as a perfect maze
-        # without a dynamic wall.
         return
 
     maze.remove_wall(*best_wall)
     maze.dynamic_wall = best_wall
 
 
-# ---------------------------------------------------------------------------
-# Maze 3: Parallel Paths (multimodality)
-# ---------------------------------------------------------------------------
+# Maze 3: Parallel Paths (multimodality).
+# Two RANDOM non-crossing monotonic routes from S to G - different per seed.
+# Path A starts with R (and ends with D); path B starts with D (and ends with
+# R). At every intermediate step path B's row is strictly larger than path
+# A's row, so the two paths share only S and G. Both paths have length
+# 2N - 1 cells. Cells off either path are decorated with DFS dead-end
+# branches, each branch attached to exactly one path - so the maze still has
+# exactly two S-G routes.
+
+def _generate_random_non_crossing_paths(N):
+    interior_a = ["R"] * (N - 2) + ["D"] * (N - 2)
+    random.shuffle(interior_a)
+    moves_a = ["R"] + interior_a + ["D"]
+
+    path_a = [(0, 0)]
+    for m in moves_a:
+        x, y = path_a[-1]
+        path_a.append((x + 1, y) if m == "R" else (x, y + 1))
+
+    path_b = [(0, 0), (0, 1)]
+    bx, by = 0, 1
+    r_left = N - 1
+    d_left = N - 2
+    total = 2 * (N - 1)
+    for step in range(2, total + 1):
+        ax_at, ay_at = path_a[step]
+        if step == total:
+            move = "R"
+        else:
+            can_r = r_left > 0 and by > ay_at
+            can_d = d_left > 0
+            if can_r and can_d:
+                move = random.choice(("R", "D"))
+            elif can_r:
+                move = "R"
+            elif can_d:
+                move = "D"
+            else:
+                raise RuntimeError(f"Stuck generating path B at step {step}")
+        if move == "R":
+            bx += 1
+            r_left -= 1
+        else:
+            by += 1
+            d_left -= 1
+        path_b.append((bx, by))
+
+    return path_a, path_b
+
+
+def _try_insert_detour_on_b(path_a, path_b, N):
+    """Insert a +2 cell detour on path B at a random feasible location.
+
+    For each interior step i where B moves R from (bx, by) to (bx+1, by) we
+    consider replacing that single step with three steps D, R, U through cells
+    (bx, by+1) and (bx+1, by+1). Symmetrically for D-moves. A candidate is
+    feasible iff both new cells are inside the grid, not on path A, and not
+    already on path B. We pick one feasible candidate at random; if none
+    exists path B is returned unchanged.
+    """
+    cells_on_a = set(path_a)
+    cells_on_b = set(path_b)
+
+    candidates = []
+    for i in range(1, len(path_b) - 1):
+        bx, by = path_b[i]
+        nx, ny = path_b[i + 1]
+        if nx == bx + 1 and ny == by:
+            d1, d2 = (bx, by + 1), (bx + 1, by + 1)
+        elif nx == bx and ny == by + 1:
+            d1, d2 = (bx + 1, by), (bx + 1, by + 1)
+        else:
+            continue
+        if not (0 <= d1[0] < N and 0 <= d1[1] < N):
+            continue
+        if not (0 <= d2[0] < N and 0 <= d2[1] < N):
+            continue
+        if d1 in cells_on_a or d2 in cells_on_a:
+            continue
+        if d1 in cells_on_b or d2 in cells_on_b:
+            continue
+        candidates.append((i, d1, d2))
+
+    if not candidates:
+        return path_b
+
+    i, d1, d2 = random.choice(candidates)
+    return path_b[: i + 1] + [d1, d2] + path_b[i + 1 :]
+
+
+def _connected_components(cells, W, H):
+    """Rook-connected components within a set of cells. Returns a list of sets."""
+    remaining = set(cells)
+    components = []
+    while remaining:
+        seed = next(iter(remaining))
+        comp = {seed}
+        queue = deque([seed])
+        remaining.remove(seed)
+        while queue:
+            x, y = queue.popleft()
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nb = (x + dx, y + dy)
+                if nb in remaining:
+                    remaining.remove(nb)
+                    comp.add(nb)
+                    queue.append(nb)
+        components.append(comp)
+    return components
+
 
 def _build_parallel_paths(maze, W, H):
-    """Two equal-length S->G corridors, with DFS-decorated interior.
+    if W != H:
+        raise ValueError("Parallel Paths currently requires a square maze (W == H).")
+    N = W
 
-    Corridor A: (0,0) -> (0,H-1) -> (W-1,H-1)   (left edge, then bottom edge)
-    Corridor B: (0,0) -> (W-1,0) -> (W-1,H-1)   (top edge,  then right edge)
+    path_a, path_b = _generate_random_non_crossing_paths(N)
+    path_b = _try_insert_detour_on_b(path_a, path_b, N)
+    assert path_a[0] == (0, 0) and path_a[-1] == (N - 1, N - 1)
+    assert path_b[0] == (0, 0) and path_b[-1] == (N - 1, N - 1)
 
-    Both corridors have exactly W + H - 1 cells, sharing only start and goal.
+    cells_on_a = set(path_a)
+    cells_on_b = set(path_b)
+    assert cells_on_a & cells_on_b == {(0, 0), (N - 1, N - 1)}
 
-    The interior cells (1..W-2 x 1..H-2) are split along the diagonal y = x:
-      - Region 1 (x >= y): dead-end branches that hang off corridor B.
-      - Region 2 (x <  y): dead-end branches that hang off corridor A.
+    for i in range(len(path_a) - 1):
+        maze.remove_wall(path_a[i], path_a[i + 1])
+    for i in range(len(path_b) - 1):
+        maze.remove_wall(path_b[i], path_b[i + 1])
 
-    Each region is a DFS tree connected to its corridor by a SINGLE opening,
-    so the interior cannot create a third S->G route. Total S->G simple
-    paths in the resulting maze: exactly two, both of length W + H - 1.
-    """
-    # 1. Carve corridor A (left + bottom edges).
-    for y in range(H - 1):
-        maze.remove_wall((0, y), (0, y + 1))
-    for x in range(W - 1):
-        maze.remove_wall((x, H - 1), (x + 1, H - 1))
+    rest = {(x, y) for y in range(H) for x in range(W)
+            if (x, y) not in cells_on_a and (x, y) not in cells_on_b}
 
-    # 2. Carve corridor B (top + right edges).
-    for x in range(W - 1):
-        maze.remove_wall((x, 0), (x + 1, 0))
-    for y in range(H - 1):
-        maze.remove_wall((W - 1, y), (W - 1, y + 1))
+    # Correctness invariant: each connected component of "rest" cells is
+    # attached to A xor B with exactly ONE opening, so no component creates a
+    # third S->G simple path. Components touching only one path go to that
+    # path; channel components touching both go to a uniformly random side.
+    for comp in _connected_components(rest, W, H):
+        _carve_dfs_in_cells(maze, comp)
+        links_a = []
+        links_b = []
+        for (x, y) in comp:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nb = (x + dx, y + dy)
+                if not (0 <= nb[0] < W and 0 <= nb[1] < H):
+                    continue
+                if not maze.has_wall_between((x, y), nb):
+                    continue
+                if nb in cells_on_a:
+                    links_a.append(((x, y), nb))
+                elif nb in cells_on_b:
+                    links_b.append(((x, y), nb))
+        if links_a and links_b:
+            chosen = links_a if random.random() < 0.5 else links_b
+        elif links_a:
+            chosen = links_a
+        elif links_b:
+            chosen = links_b
+        else:
+            continue
+        maze.remove_wall(*random.choice(chosen))
 
-    # 3. Partition interior cells into Region 1 and Region 2.
-    region1 = set()  # x >= y -> branches off corridor B
-    region2 = set()  # x <  y -> branches off corridor A
-    for y in range(1, H - 1):
-        for x in range(1, W - 1):
-            if x >= y:
-                region1.add((x, y))
-            else:
-                region2.add((x, y))
-
-    # 4. Carve a DFS spanning tree inside each region.
-    _carve_dfs_in_cells(maze, region1)
-    _carve_dfs_in_cells(maze, region2)
-
-    # 5. Connect each region to its assigned corridor with exactly one opening.
-    #    We only consider walls between region cells and the corridor cells
-    #    explicitly listed for that region; this guarantees no shortcut to
-    #    the other corridor.
-    r1_to_B = []
-    for (x, y) in region1:
-        if y == 1:                                    # adjacent to top-edge corridor B
-            r1_to_B.append(((x, 1), (x, 0)))
-        if x == W - 2:                                # adjacent to right-edge corridor B
-            r1_to_B.append(((W - 2, y), (W - 1, y)))
-    if r1_to_B:
-        maze.remove_wall(*random.choice(r1_to_B))
-
-    r2_to_A = []
-    for (x, y) in region2:
-        if x == 1:                                    # adjacent to left-edge corridor A
-            r2_to_A.append(((1, y), (0, y)))
-        if y == H - 2:                                # adjacent to bottom-edge corridor A
-            r2_to_A.append(((x, H - 2), (x, H - 1)))
-    if r2_to_A:
-        maze.remove_wall(*random.choice(r2_to_A))
-
-
-# ---------------------------------------------------------------------------
-# Public entry point
-# ---------------------------------------------------------------------------
 
 def generate_maze(width: int, height: int, seed: int = 2026,
                   maze_type: str = "Random") -> MazeEnvironment:
-    """Generate a maze of the requested type.
-
-    All maze types use start = (0, 0) and goal = (W-1, H-1).
-    """
+    """All maze types use start = (0, 0) and goal = (W-1, H-1)."""
     random.seed(seed)
     np.random.seed(seed)
 
-    start = (0, 0)
-    goal = (width - 1, height - 1)
-    maze = MazeEnvironment(width, height, start=start, goal=goal)
+    maze = MazeEnvironment(width, height,
+                           start=(0, 0), goal=(width - 1, height - 1))
 
     if maze_type == "Random":
         _carve_dfs_rect(maze, 0, width, 0, height)
