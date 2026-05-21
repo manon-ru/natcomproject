@@ -1,0 +1,230 @@
+Hypothesis report from results/runs.csv
+Total rows: 28  Cells: 1/27
+
+--- Context: success rate and path optimality ---
+Algo  Maze              Pop     Success  Optimality
+GA    U-Trap            20    0/28 (0%)         nan
+
+--- H1 (Coupling shapes diversity dynamics)  [pop=20] ---
+Prediction: PSO collapses fastest, GA most stable, ACO in between.
+
+  Maze: U-Trap
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    GA=10.000
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    GA=0.000
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    GA=0.210
+      verdict:   PARTIAL (worst matches)
+
+  Maze: Sudden Wall
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+  Maze: Parallel Paths
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+--- H1 (Coupling shapes diversity dynamics)  [pop=50] ---
+Prediction: PSO collapses fastest, GA most stable, ACO in between.
+
+  Maze: U-Trap
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+  Maze: Sudden Wall
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+  Maze: Parallel Paths
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+--- H1 (Coupling shapes diversity dynamics)  [pop=150] ---
+Prediction: PSO collapses fastest, GA most stable, ACO in between.
+
+  Maze: U-Trap
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+  Maze: Sudden Wall
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+  Maze: Parallel Paths
+    time_to_half_entropy (lower = faster collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    diversity_floor      (lower = severer collapse)
+      predicted: PSO < ACO < GA
+      observed:  GA < PSO < ACO
+      values:    
+      verdict:   CONTRADICTED
+    mean_entropy         (higher = sustained diversity)
+      predicted: GA > ACO > PSO
+      observed:  GA > PSO > ACO
+      values:    
+      verdict:   PARTIAL (worst matches)
+
+--- H2 (Environmental challenge x coupling)  [pop=20] ---
+  U-Trap (deception)        most stresses PSO
+    field=floor  predicted-worst=PSO  observed-worst=GA
+    values: GA=0.000
+    verdict: CONTRADICTED (worst=GA)
+
+  Sudden Wall (non-stat)    most stresses ACO (adaptation time)
+    field=adapt  predicted-worst=ACO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+  Parallel Paths (multimodality)  most stresses PSO (diversity floor)
+    field=floor  predicted-worst=PSO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+--- H2 (Environmental challenge x coupling)  [pop=50] ---
+  U-Trap (deception)        most stresses PSO
+    field=floor  predicted-worst=PSO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+  Sudden Wall (non-stat)    most stresses ACO (adaptation time)
+    field=adapt  predicted-worst=ACO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+  Parallel Paths (multimodality)  most stresses PSO (diversity floor)
+    field=floor  predicted-worst=PSO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+--- H2 (Environmental challenge x coupling)  [pop=150] ---
+  U-Trap (deception)        most stresses PSO
+    field=floor  predicted-worst=PSO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+  Sudden Wall (non-stat)    most stresses ACO (adaptation time)
+    field=adapt  predicted-worst=ACO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+  Parallel Paths (multimodality)  most stresses PSO (diversity floor)
+    field=floor  predicted-worst=PSO  observed-worst=GA
+    values: 
+    verdict: CONTRADICTED (worst=GA)
+
+--- H3 (Population scale modulates but does not reverse) ---
+Prediction: larger pop amplifies PSO weakness; GA benefits; ACO insensitive.
+
+  GA   U-Trap           diversity_floor:  pop20=0.000   trend: ?
+  GA   Sudden Wall      diversity_floor:     trend: ?
+  GA   Parallel Paths   diversity_floor:     trend: ?
+  PSO  U-Trap           diversity_floor:     trend: ?
+  PSO  Sudden Wall      diversity_floor:     trend: ?
+  PSO  Parallel Paths   diversity_floor:     trend: ?
+  ACO  U-Trap           diversity_floor:     trend: ?
+  ACO  Sudden Wall      diversity_floor:     trend: ?
+  ACO  Parallel Paths   diversity_floor:     trend: ?
+
