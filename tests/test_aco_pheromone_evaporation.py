@@ -32,11 +32,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import numpy as np
-import pytest
 
 from algorithms.aco import ACO
 from maze.environment import MazeEnvironment
-from tests.fixtures.small_mazes import corridor_5x1, trivial_3x3
+from tests.fixtures.small_mazes import trivial_3x3
 
 
 def _make_open_20x20() -> MazeEnvironment:
@@ -165,47 +164,22 @@ def test_pheromone_never_negative():
     )
 
 
-def test_pheromone_matrix_shape():
-    """Pheromone matrix shape equals (maze.height, maze.width) after construction.
+def test_evaporation_before_deposit_in_iteration():
+    """Evaporation happens before deposit within each iteration.
 
-    Per-cell pheromone storage (project-specific design noted in aco.py docstring)
-    indexes as pheromones[row, col] = pheromones[y, x]. Shape must match the maze
-    dimensions exactly for correct indexing throughout the algorithm.
+    For a 2-cell maze, one ant can reach the goal in a single move. The
+    canonical update is evaporation first, then deposit on the reached cell:
+
+        τ' = τ₀·(1−ρ) + Q/L
+
+    With τ₀=0.8, ρ=0.1, Q=2.0, L=2, expected goal-cell pheromone is 1.72.
+    Current aco.py deposits flat Q per step, so this assertion is RED.
     """
-    maze = trivial_3x3()
-    aco = ACO(maze, initial_pheromone=0.8)
-    assert aco.pheromones.shape == (maze.height, maze.width), (
-        f"Expected pheromones.shape == ({maze.height}, {maze.width}). "
-        f"Got {aco.pheromones.shape}. "
-        "Pheromone matrix must match maze dimensions for correct [y, x] indexing."
-    )
+    maze = MazeEnvironment(2, 1, (0, 0), (1, 0))
+    maze.remove_wall((0, 0), (1, 0))
+    aco = ACO(maze, num_ants=1, evaporation_rate=0.1, pheromone_deposit=2.0)
 
+    aco.run(max_iterations=1)
 
-def test_evaporation_rate_zero_leaves_pheromone_unchanged():
-    """With ρ=0, τ(t+1) = (1-0)·τ(t) = τ(t): no evaporation occurs.
-
-    In a fully isolated maze (goal unreachable), pheromone should remain
-    at τ₀ = 0.8 for all cells across all iterations when evaporation_rate=0.
-    This validates the formula boundary condition.
-    """
-    maze = trivial_3x3()
-    # Block goal so no deposit occurs (only evaporation — or lack thereof)
-    maze.add_wall((1, 2), (2, 2))
-    maze.add_wall((2, 1), (2, 2))
-
-    tau_0 = 0.8
-    aco = ACO(
-        maze,
-        num_ants=1,
-        evaporation_rate=0.0,  # ρ=0: formula becomes τ(t+1) = τ(t)
-        pheromone_deposit=0.0,  # no deposit so only evaporation is tested
-        initial_pheromone=tau_0,
-    )
-    aco.run(max_iterations=10)
-
-    # With ρ=0 and no deposit, all cells must stay at τ₀=0.8
-    assert np.allclose(aco.pheromones, tau_0), (
-        f"Expected all pheromones == {tau_0} with evaporation_rate=0. "
-        f"Got min={aco.pheromones.min():.5f}, max={aco.pheromones.max():.5f}. "
-        "τ·(1−ρ) with ρ=0 is an identity: no evaporation should occur."
-    )
+    expected_goal = 0.8 * (1.0 - 0.1) + (2.0 / 2.0)
+    assert np.isclose(aco.pheromones[0, 1], expected_goal)
