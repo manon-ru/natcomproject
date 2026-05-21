@@ -1,0 +1,8 @@
+tests/test_aco_pheromone_evaporation.py::test_pheromone_initialized_to_tau_zero
+tests/test_aco_pheromone_evaporation.py::test_evaporation_formula_is_multiply_1_minus_rho
+tests/test_aco_pheromone_evaporation.py::test_pheromone_floor_is_001
+tests/test_aco_pheromone_evaporation.py::test_pheromone_never_negative
+tests/test_aco_pheromone_evaporation.py::test_pheromone_matrix_shape
+tests/test_aco_pheromone_evaporation.py::test_evaporation_rate_zero_leaves_pheromone_unchanged
+
+6 tests collected in 0.13s

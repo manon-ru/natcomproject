@@ -1,0 +1,65 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.0.3, pluggy-1.6.0 -- /Users/robert/Code/natcomproject/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/robert/Code/natcomproject
+configfile: pyproject.toml
+collecting ... collected 6 items
+
+tests/test_aco_pheromone_evaporation.py::test_pheromone_initialized_to_tau_zero PASSED [ 16%]
+tests/test_aco_pheromone_evaporation.py::test_evaporation_formula_is_multiply_1_minus_rho FAILED [ 33%]
+tests/test_aco_pheromone_evaporation.py::test_pheromone_floor_is_001 PASSED [ 50%]
+tests/test_aco_pheromone_evaporation.py::test_pheromone_never_negative PASSED [ 66%]
+tests/test_aco_pheromone_evaporation.py::test_pheromone_matrix_shape PASSED [ 83%]
+tests/test_aco_pheromone_evaporation.py::test_evaporation_rate_zero_leaves_pheromone_unchanged PASSED [100%]
+
+=================================== FAILURES ===================================
+_______________ test_evaporation_formula_is_multiply_1_minus_rho _______________
+
+    def test_evaporation_formula_is_multiply_1_minus_rho():
+        """τ(t+1) = (1-ρ)·τ(t) when no path is completed, per Dorigo 1996 AS.
+    
+        In a 20×20 open maze the goal sits 38 Manhattan steps from start. After
+        exactly 1 iteration (1 step per ant), no ant can reach (19,19). Therefore
+        only evaporation applies — no Q/L deposit — and every cell must equal
+        exactly τ₀ · (1−ρ) = 0.8 · 0.9 = 0.72.
+    
+        NOTE: FAILS on current aco.py because it deposits flat Q=2.0 on every
+        forward step (line 144) regardless of goal completion. Cells that ants
+        moved to get pheromone ≈ 0.72 + 2.0 = 2.72 instead of 0.72.
+    
+        This is both an evaporation formula test AND a deposit ordering test:
+        the formula τ·(1−ρ) is correct, but spurious per-step deposits violate
+        the Dorigo 1996 rule that Δτ = 0 for incomplete paths.
+        """
+        tau_0 = 0.8
+        rho = 0.1
+        maze = _make_open_20x20()
+        aco = ACO(
+            maze,
+            num_ants=10,
+            evaporation_rate=rho,
+            pheromone_deposit=2.0,
+            initial_pheromone=tau_0,
+        )
+        aco.run(max_iterations=1)
+    
+        # Per Dorigo 1996 AS Q/L rule: no completed path → Δτ = 0.
+        # All cells must be exactly evaporation-reduced: τ₀·(1−ρ) = 0.72.
+        expected = tau_0 * (1.0 - rho)  # 0.72
+>       assert np.all(aco.pheromones <= expected + 1e-6), (
+            f"Expected all pheromones ≤ {expected:.4f} after 1 iteration "
+            f"(τ₀·(1−ρ) = {tau_0}·{1.0 - rho} = {expected:.4f}, evaporation only). "
+            f"Max observed = {aco.pheromones.max():.5f}. "
+            "Per Dorigo 1996 AS: incomplete paths have Δτ = 0; flat per-step "
+            f"deposit Q={2.0} inflates cells ants visited above evap-only baseline."
+        )
+E       AssertionError: Expected all pheromones ≤ 0.7200 after 1 iteration (τ₀·(1−ρ) = 0.8·0.9 = 0.7200, evaporation only). Max observed = 20.72000. Per Dorigo 1996 AS: incomplete paths have Δτ = 0; flat per-step deposit Q=2.0 inflates cells ants visited above evap-only baseline.
+E       assert np.False_
+E        +  where np.False_ = <function all at 0x10afe7d70>(array([[ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [20.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72, ... 0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72]]) <= (0.7200000000000001 + 1e-06))
+E        +    where <function all at 0x10afe7d70> = np.all
+E        +    and   array([[ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [20.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72, ... 0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72],\n       [ 0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,  0.72,\n         0.72,  0.72]]) = <algorithms.aco.ACO object at 0x10b1a6720>.pheromones
+
+tests/test_aco_pheromone_evaporation.py:101: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_aco_pheromone_evaporation.py::test_evaporation_formula_is_multiply_1_minus_rho
+========================= 1 failed, 5 passed in 0.16s ==========================
