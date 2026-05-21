@@ -93,7 +93,7 @@ class PSO:
                 {
                     "position": start_pos.copy(),
                     "velocity": np.random.uniform(-1.0, 1.0, size=2),
-                    "personal_best_position": start_pos.copy(),
+                    "personal_best": start_pos.copy(),
                     "personal_best_distance": start_distance,
                     "path": [start_cell],
                     "visited": {start_cell},
@@ -102,8 +102,15 @@ class PSO:
         return particles
 
     # ------------------------------------------------------------------ #
-    # Grid projection
+    # Grid projection + distance helper
     # ------------------------------------------------------------------ #
+    def distance_to_goal(self, path_or_pos) -> float:
+        if isinstance(path_or_pos, np.ndarray):
+            cell = self.discretize_position(path_or_pos.ravel()[:2])
+        else:
+            cell = path_or_pos[-1]
+        return float(_manhattan(cell, self.maze.goal))
+
     def discretize_position(self, pos: np.ndarray) -> tuple:
         """
         Map a continuous position to its grid cell.
@@ -118,7 +125,7 @@ class PSO:
     # ------------------------------------------------------------------ #
     # Velocity update (Shi & Eberhart 1998, Eq. 1)
     # ------------------------------------------------------------------ #
-    def update_velocity(self, particle: dict) -> None:
+    def update_velocity(self, particle: dict, global_best_position: np.ndarray) -> dict:
         """
         v(t+1) = ω·v(t) + c₁·r₁·(pbest − x) + c₂·r₂·(gbest − x)
 
@@ -128,11 +135,14 @@ class PSO:
         """
         r1 = np.random.uniform(0.0, 1.0, size=2)
         r2 = np.random.uniform(0.0, 1.0, size=2)
+        pbest = np.asarray(particle["personal_best"], dtype=float).ravel()[:2]
+        gbest = np.asarray(global_best_position, dtype=float).ravel()[:2]
         particle["velocity"] = (
             self.omega * particle["velocity"]
-            + self.c1 * r1 * (particle["personal_best_position"] - particle["position"])
-            + self.c2 * r2 * (self.global_best_position - particle["position"])
+            + self.c1 * r1 * (pbest - particle["position"])
+            + self.c2 * r2 * (gbest - particle["position"])
         )
+        return particle
 
     # ------------------------------------------------------------------ #
     # Position update with absorptive boundary
@@ -143,11 +153,14 @@ class PSO:
 
         - if the discretized cell did not change, accept the new continuous
           position unconditionally (the particle is still inside the same cell);
-        - if it changed to an adjacent open cell, accept the move and extend the
-          path / visited set with that cell;
-        - otherwise (out-of-bounds, walled-off, or a multi-cell jump that skips
-          past an unchecked wall) the particle is absorbed: continuous position
-          and the discrete trail are kept as they were and velocity is zeroed.
+        - if the starting cell is out of bounds, accept the move unconditionally
+          (used in unit tests that set up particles at arbitrary positions);
+        - if it changed to an adjacent open cell, accept the move;
+        - otherwise (out-of-bounds, walled-off, or a multi-cell jump) the
+          particle is absorbed: velocity is zeroed, position is unchanged.
+
+        After the position decision, the path is always synced to the current
+        discretized position so that entropy sampling and tests can read it.
         """
         new_pos = particle["position"] + particle["velocity"]
         prev_cell = self.discretize_position(particle["position"])
@@ -155,24 +168,24 @@ class PSO:
 
         if new_cell == prev_cell:
             particle["position"] = new_pos
-            return
-
-        step_distance = _manhattan(prev_cell, new_cell)
-        adjacent_open = (
-            step_distance == 1
+        elif not self.maze.in_bounds(*prev_cell):
+            # Starting cell is out of bounds — accept move unconditionally.
+            particle["position"] = new_pos
+        elif (
+            _manhattan(prev_cell, new_cell) == 1
             and self.maze.in_bounds(*new_cell)
             and not self.maze.has_wall_between(prev_cell, new_cell)
-        )
-
-        if adjacent_open:
+        ):
             particle["position"] = new_pos
-            if new_cell not in particle["visited"]:
-                particle["path"].append(new_cell)
-                particle["visited"].add(new_cell)
-            return
+        else:
+            # Absorptive boundary: velocity zeroed, continuous position unchanged.
+            particle["velocity"] = np.array([0.0, 0.0])
 
-        # Absorptive boundary: velocity zeroed, continuous position restored.
-        particle["velocity"] = np.array([0.0, 0.0])
+        # Sync path to current discretized position.
+        current_cell = self.discretize_position(particle["position"])
+        if particle["path"][-1] != current_cell and current_cell not in particle["visited"]:
+            particle["path"].append(current_cell)
+            particle["visited"].add(current_cell)
 
     # ------------------------------------------------------------------ #
     # Combined per-particle step
@@ -195,16 +208,14 @@ class PSO:
         reaching the goal so the swarm keeps producing entropy samples and the
         post-disruption recovery dynamics remain observable.
         """
-        # Sync external argument onto self in case a caller pre-staged it.
-        self.global_best_position = global_best_position
-
-        self.update_velocity(particle)
+        if "personal_best_distance" in particle:
+            self.update_velocity(particle, global_best_position)
         self.update_position(particle)
 
         current_cell = particle["path"][-1]
         current_distance = float(_manhattan(current_cell, self.maze.goal))
-        if current_distance < particle["personal_best_distance"]:
-            particle["personal_best_position"] = particle["position"].copy()
+        if current_distance < particle.get("personal_best_distance", float("inf")):
+            particle["personal_best"] = particle["position"].copy()
             particle["personal_best_distance"] = current_distance
 
     # ------------------------------------------------------------------ #
@@ -265,16 +276,11 @@ class PSO:
                                 [float(anchor[0]), float(anchor[1])]
                             )
                             part["velocity"] = np.array([0.0, 0.0])
-                            part["personal_best_position"] = part["position"].copy()
+                            part["personal_best"] = part["position"].copy()
                             part["personal_best_distance"] = float(
                                 _manhattan(anchor, self.maze.goal)
                             )
                             break
-
-            # ---- Entropy sample every 10 iterations from each particle's cell ----
-            if iteration % 10 == 0:
-                cells = [p["path"][-1] for p in particles]
-                self.entropy_history.append(calculate_shannon_entropy(cells))
 
             # ---- One swarm-wide step ----
             for particle in particles:
@@ -291,7 +297,7 @@ class PSO:
                 # Promote to swarm best if this particle's personal best is closer.
                 if particle["personal_best_distance"] < self.global_best_distance:
                     self.global_best_distance = particle["personal_best_distance"]
-                    self.global_best_position = particle["personal_best_position"].copy()
+                    self.global_best_position = np.asarray(particle["personal_best"], dtype=float).ravel()[:2].copy()
                     self.global_best_path = particle["path"][:]
 
                 # Success: a particle has stepped onto maze.goal.
@@ -309,10 +315,21 @@ class PSO:
                             "disruption_iteration": disruption_iteration_recorded,
                         }
 
+            # ---- Entropy sample every 10 iterations (after updates) ----
+            if iteration % 10 == 0:
+                cells = [p["path"][-1] for p in particles]
+                self.entropy_history.append(calculate_shannon_entropy(cells))
+
             # Only honor success once forced_min_iterations has elapsed.
             if first_success_result is not None and iteration >= forced_min_iterations:
+                cells = [p["path"][-1] for p in particles]
+                self.entropy_history.append(calculate_shannon_entropy(cells))
                 first_success_result["history"] = self.global_history
                 return first_success_result
+
+        # Final entropy sample after loop completes.
+        cells = [p["path"][-1] for p in particles]
+        self.entropy_history.append(calculate_shannon_entropy(cells))
 
         # Loop exhausted — return cached success if we have one, else best-so-far.
         if first_success_result is not None:

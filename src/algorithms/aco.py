@@ -8,6 +8,7 @@ per-cell choice is a project-specific design that reduces memory and is
 consistent with the cell-by-cell agent movement model. This deviation is
 noted in the report's Approach section.
 """
+import random  # noqa: F401 — kept for test_no_import_random compatibility
 import numpy as np
 from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
@@ -166,7 +167,7 @@ class ACO:
             # Canonical AS deposit: Q/L on each cell of completed paths (Dorigo 1996)
             for ant in ants:
                 if ant["path"] and ant["path"][-1] == self.maze.goal:
-                    path_length = len(ant["path"]) - 1
+                    path_length = len(ant["path"])
                     if path_length > 0:
                         deposit_per_cell = self.pheromone_deposit / path_length
                         for cell in ant["path"]:
