@@ -1,0 +1,7 @@
+tests/test_pso_invariants.py::test_no_import_random
+tests/test_pso_invariants.py::test_particle_has_velocity_attribute
+tests/test_pso_invariants.py::test_particle_has_continuous_position
+tests/test_pso_invariants.py::test_run_returns_required_dict_keys
+tests/test_pso_invariants.py::test_entropy_history_populated
+
+5 tests collected in 0.21s
