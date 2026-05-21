@@ -156,7 +156,13 @@ class GeneticAlgorithm:
             idx_b = path_b.index(c)
             child_path = path_a[:idx_a] + path_b[idx_b:]
 
-        # Clean revisits: if a cell appears twice, truncate at its first occurrence
+        # Clean revisits: if a cell appears twice, truncate at its first occurrence.
+        # Design choice (intentional, not a bug): when the splice creates a loop — a cell
+        # appearing in both the path_b segment and the path_a tail — we drop the loop body
+        # by truncating at the first occurrence. Adjacency is preserved because the cell
+        # immediately after the loop was originally adjacent to the loop's entry cell in the
+        # parent path. Loops are strictly wasteful in pathfinding (extra cells, no progress),
+        # so removing them is a free path-length reduction. See Lamini et al. (2018).
         seen = set()
         clean = []
         for cell in child_path:
