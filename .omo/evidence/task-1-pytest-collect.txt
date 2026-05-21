@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/robert/Code/natcomproject
+configfile: pyproject.toml
+testpaths: tests
+collected 1 item
+
+<Dir natcomproject>
+  <Package tests>
+    <Module test_imports.py>
+      <Function test_can_import>
+
+========================== 1 test collected in 0.00s ===========================
