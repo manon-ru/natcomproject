@@ -111,16 +111,18 @@ class PSO:
             cell = path_or_pos[-1]
         return float(_manhattan(cell, self.maze.goal))
 
-    def discretize_position(self, pos: np.ndarray) -> tuple:
+    def discretize_position(self, pos) -> tuple:
         """
         Map a continuous position to its grid cell.
 
         Project rule: round each component to the nearest integer, so a
         continuous coordinate sitting exactly on a cell midpoint maps to the
-        nearer cell. NumPy's banker's-rounding is used for numerical
-        consistency across the codebase.
+        nearer cell. Python's banker's-rounding (round half to even) is
+        used for numerical consistency. Implemented with float() + round()
+        rather than np.round() to avoid numpy dispatch overhead in the
+        hot path (3 calls per particle per iteration).
         """
-        return (int(np.round(pos[0])), int(np.round(pos[1])))
+        return (round(float(pos[0])), round(float(pos[1])))
 
     # ------------------------------------------------------------------ #
     # Velocity update (Shi & Eberhart 1998, Eq. 1)
@@ -135,12 +137,16 @@ class PSO:
         """
         r1 = np.random.uniform(0.0, 1.0, size=2)
         r2 = np.random.uniform(0.0, 1.0, size=2)
-        pbest = np.asarray(particle["personal_best"], dtype=float).ravel()[:2]
-        gbest = np.asarray(global_best_position, dtype=float).ravel()[:2]
+        pb = particle["personal_best"]
+        if not (isinstance(pb, np.ndarray) and pb.ndim == 1 and pb.shape[0] == 2):
+            pb = np.asarray(pb, dtype=float).ravel()[:2]
+        gb = global_best_position
+        if not (isinstance(gb, np.ndarray) and gb.ndim == 1 and gb.shape[0] == 2):
+            gb = np.asarray(gb, dtype=float).ravel()[:2]
         particle["velocity"] = (
             self.omega * particle["velocity"]
-            + self.c1 * r1 * (pbest - particle["position"])
-            + self.c2 * r2 * (gbest - particle["position"])
+            + self.c1 * r1 * (pb - particle["position"])
+            + self.c2 * r2 * (gb - particle["position"])
         )
         return particle
 
@@ -168,21 +174,21 @@ class PSO:
 
         if new_cell == prev_cell:
             particle["position"] = new_pos
+            current_cell = new_cell
         elif not self.maze.in_bounds(*prev_cell):
-            # Starting cell is out of bounds — accept move unconditionally.
             particle["position"] = new_pos
+            current_cell = new_cell
         elif (
             _manhattan(prev_cell, new_cell) == 1
             and self.maze.in_bounds(*new_cell)
             and not self.maze.has_wall_between(prev_cell, new_cell)
         ):
             particle["position"] = new_pos
+            current_cell = new_cell
         else:
-            # Absorptive boundary: velocity zeroed, continuous position unchanged.
             particle["velocity"] = np.array([0.0, 0.0])
+            current_cell = prev_cell
 
-        # Sync path to current discretized position.
-        current_cell = self.discretize_position(particle["position"])
         if particle["path"][-1] != current_cell and current_cell not in particle["visited"]:
             particle["path"].append(current_cell)
             particle["visited"].add(current_cell)
