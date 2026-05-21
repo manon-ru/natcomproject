@@ -17,14 +17,33 @@ def _assert_valid_path(ga, path):
 
 
 def test_mutate_extends_or_changes_path_when_possible(monkeypatch):
+    """RED test: current code truncates at stuck point and returns without extension.
+    After fix (retry-3 logic), second call picks index 1 which allows extension.
+
+    Path: [(0,0),(1,0),(1,1),(0,1),(0,0),(1,0)] — has revisits intentionally so that
+    truncating at index 5 gives path ending at (0,0) whose only unvisited-free neighbors
+    are all already in the truncated set {(0,0),(1,0),(1,1),(0,1)}.
+    Truncating at index 1 gives [(0,0)] whose neighbors (1,0),(0,1) are unvisited → extends.
+    """
     ga = _make_ga(mutation_rate=1.0)
     ind = {"path": [(0, 0), (1, 0), (1, 1), (0, 1), (0, 0), (1, 0)]}
 
-    monkeypatch.setattr(random, "randint", lambda low, high: 5)
+    # First call returns 5 (stuck truncation point); subsequent calls return 1 (working point).
+    # Current code: calls randint once → stuck → returns truncated path → test FAILS (RED).
+    # Fixed code: calls randint again → gets 1 → extends → test PASSES (GREEN).
+    call_count = [0]
+
+    def mock_randint(low, high):
+        call_count[0] += 1
+        return 5 if call_count[0] == 1 else 1
+
+    monkeypatch.setattr(random, "randint", mock_randint)
 
     mutated = ga._mutate(ind)["path"]
 
-    assert any(cell not in ind["path"][:5] for cell in mutated)
+    # After fix: mutated path starts from [(0,0)] and extends into new cells not in the
+    # original first-5 set {(0,0),(1,0),(1,1),(0,1)}.
+    assert any(cell not in set(ind["path"][:5]) for cell in mutated)
 
 
 def test_mutate_returns_valid_path():
