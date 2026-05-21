@@ -41,7 +41,7 @@ ACO_PARAMS = {
 # --- Experimental Design (proposal Section 4.3) ---
 
 POPULATION_SIZES = [20, 50, 150]       # scale sweep
-MAZE_TYPES = ["U-Trap", "Sudden Wall", "Parallel Paths"]
+MAZE_TYPES = ["Shortest Path Trap", "Sudden Wall", "Parallel Paths"]
 INSTANCE_SEEDS = list(range(1, 11))    # 10 distinct maze instances per cell
 NUM_TRIALS = 10                        # independent trials per instance
 MAZE_WIDTH = 40

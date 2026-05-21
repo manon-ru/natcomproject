@@ -13,7 +13,7 @@ try:
     from config import MAZE_TYPES, INSTANCE_SEEDS, MAZE_WIDTH, MAZE_HEIGHT
 except ImportError:
     # Fallback if config.py not yet available
-    MAZE_TYPES = ["U-Trap", "Sudden Wall", "Parallel Paths"]
+    MAZE_TYPES = ["Shortest Path Trap", "Sudden Wall", "Parallel Paths"]
     INSTANCE_SEEDS = list(range(1, 11))
     MAZE_WIDTH = 40
     MAZE_HEIGHT = 40

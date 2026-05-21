@@ -29,7 +29,7 @@ from maze.environment import MazeEnvironment
 # Maze tiers
 # ---------------------------------------------------------------------------
 TIERS = [
-    {"name": "Maze 1: U-Trap", "width": 20, "height": 20, "seed": 2026, "maze_type": "U-Trap"},
+    {"name": "Maze 1: Shortest Path Trap", "width": 20, "height": 20, "seed": 2026, "maze_type": "Shortest Path Trap"},
     {"name": "Maze 2: Sudden Wall", "width": 20, "height": 20, "seed": 2026, "maze_type": "Sudden Wall"},
     {"name": "Maze 3: Parallel Paths", "width": 20, "height": 20, "seed": 2026, "maze_type": "Parallel Paths"},
 ]

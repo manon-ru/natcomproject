@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 from runner import run_single_trial
 
 def main():
-    task = ("PSO", "U-Trap", 20, 1, 42)
+    task = ("PSO", "Shortest Path Trap", 20, 1, 42)
     r1 = run_single_trial(task)
     r2 = run_single_trial(task)
 

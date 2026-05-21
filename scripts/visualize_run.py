@@ -5,11 +5,11 @@ Useful for inspecting algorithm behavior, especially when investigating why
 an algorithm fails (e.g., GA 0% success on certain maze types).
 
 Usage:
-    uv run python scripts/visualize_run.py --algo GA --maze U-Trap
+    uv run python scripts/visualize_run.py --algo GA --maze "Shortest Path Trap"
     uv run python scripts/visualize_run.py --algo PSO --maze "Sudden Wall" --pop 50
     uv run python scripts/visualize_run.py --algo ACO --maze "Parallel Paths" --pop 150
-    uv run python scripts/visualize_run.py --algo GA --maze U-Trap --small
-    uv run python scripts/visualize_run.py --algo GA --maze U-Trap --no-entropy
+    uv run python scripts/visualize_run.py --algo GA --maze "Shortest Path Trap" --small
+    uv run python scripts/visualize_run.py --algo GA --maze "Shortest Path Trap" --no-entropy
 
 Each run displays:
   - Maze with walls, optimal path (red), best found path (green if any), explored cells (faint blue)
@@ -31,7 +31,7 @@ from visualization.plot import visualize_maze, visualize_entropy
 def main():
     ap = argparse.ArgumentParser(description="Visualize a single algorithm trial.")
     ap.add_argument("--algo", choices=["GA", "PSO", "ACO"], default="GA")
-    ap.add_argument("--maze", choices=["U-Trap", "Sudden Wall", "Parallel Paths"], default="U-Trap")
+    ap.add_argument("--maze", choices=["Shortest Path Trap", "Sudden Wall", "Parallel Paths"], default="Shortest Path Trap")
     ap.add_argument("--pop", type=int, default=50)
     ap.add_argument("--seed", type=int, default=1, help="Maze instance seed")
     ap.add_argument("--trial-seed", type=int, default=42, help="Algorithm trial seed")

@@ -7,7 +7,8 @@ Convention shared by all maze types:
 
 Maze types:
 
-  U-Trap          Deception.        A random monotonic R/D corridor from S to
+  Shortest Path Trap
+                  Deception.        A random monotonic R/D corridor from S to
                                     T_end = (W-1, H-2). T_end is one cell
                                     above G but the edge to G is permanently
                                     walled, so the heuristic-monotonic trap
@@ -117,7 +118,7 @@ def _bfs_distances(maze, source):
     return dist
 
 
-# Maze 1: U-Trap (deception).
+# Maze 1: Shortest Path Trap (deception).
 # The trap is a random monotonic R/D walk from S to T_end = (W-1, H-2), one
 # cell above G. The edge T_end -> G is permanently walled, so the trap dead-
 # ends one cell short of the goal. Every step along the trap reduces Manhattan
@@ -136,7 +137,7 @@ def _bfs_distances(maze, source):
 # looks like an ordinary maze region but is a dead end with respect to G, so
 # any time an agent spends inside it is wasted search.
 
-def _build_u_trap(maze, W, H):
+def _build_shortest_path_trap(maze, W, H):
     T_end = (W - 1, H - 2)
 
     interior_moves = ["R"] * (W - 2) + ["D"] * (H - 2)
@@ -422,8 +423,8 @@ def generate_maze(width: int, height: int, seed: int = 2026,
 
     if maze_type == "Random":
         _carve_dfs_rect(maze, 0, width, 0, height)
-    elif maze_type == "U-Trap":
-        _build_u_trap(maze, width, height)
+    elif maze_type == "Shortest Path Trap":
+        _build_shortest_path_trap(maze, width, height)
     elif maze_type == "Sudden Wall":
         _build_sudden_wall(maze, width, height)
     elif maze_type == "Parallel Paths":

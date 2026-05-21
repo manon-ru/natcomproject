@@ -2,7 +2,8 @@
 
 For each maze type we render the most informative view:
 
-  U-Trap          Shortest S->G path in lime green.
+  Shortest Path Trap
+                  Shortest S->G path in lime green.
   Sudden Wall     Short path (green) before the wall drops, long path
                   (orange) after the wall drops, and the dynamic wall
                   location highlighted in red.
@@ -26,7 +27,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 SIZE = 40
 SEEDS = [1, 2, 3, 4, 5]
-MAZE_TYPES = ["U-Trap", "Sudden Wall", "Parallel Paths"]
+MAZE_TYPES = ["Shortest Path Trap", "Sudden Wall", "Parallel Paths"]
 
 
 def _paths_for_parallel(maze):
@@ -97,13 +98,13 @@ for maze_type in MAZE_TYPES:
             plt.close(fig)
             print(f"  {fname}  A={la}  B={lb}")
 
-        elif maze_type == "U-Trap" and getattr(maze, "trap_path", None):
+        elif maze_type == "Shortest Path Trap" and getattr(maze, "trap_path", None):
             optimal = maze.shortest_path()
             opt_len = (len(optimal) - 1) if optimal else None
             trap = maze.trap_path
             trap_steps = len(trap) - 1
             title = (
-                f"U-Trap {SIZE}x{SIZE}  seed={seed}   "
+                f"Shortest Path Trap {SIZE}x{SIZE}  seed={seed}   "
                 f"real path R (green) = {opt_len} steps   |   "
                 f"trap corridor (orange) = {trap_steps} steps, dead-ends 1 cell from G"
             )

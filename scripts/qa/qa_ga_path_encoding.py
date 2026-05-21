@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 from maze.generator import generate_maze
 from algorithms.ga import GeneticAlgorithm
 
-m = generate_maze(40, 40, seed=1, maze_type="U-Trap")
+m = generate_maze(40, 40, seed=1, maze_type="Shortest Path Trap")
 ga = GeneticAlgorithm(m, pop_size=20)
 random.seed(0)
 pop = ga._initialize_population()

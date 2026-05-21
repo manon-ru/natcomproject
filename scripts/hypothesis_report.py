@@ -28,7 +28,7 @@ import statistics
 from collections import defaultdict
 
 ALGOS = ("GA", "PSO", "ACO")
-MAZES = ("U-Trap", "Sudden Wall", "Parallel Paths")
+MAZES = ("Shortest Path Trap", "Sudden Wall", "Parallel Paths")
 POPS = (20, 50, 150)
 
 
@@ -115,8 +115,8 @@ def report_h1(by_cell, pop):
 def report_h2(by_cell, pop):
     lines = [f"--- H2 (Environmental challenge x coupling)  [pop={pop}] ---"]
     sub_h2 = [
-        ("U-Trap (deception)        most stresses PSO",
-         "U-Trap",        "floor", True,  "PSO"),
+        ("Shortest Path Trap (deception)  most stresses PSO",
+         "Shortest Path Trap", "floor", True,  "PSO"),
         ("Sudden Wall (non-stat)    most stresses ACO (adaptation time)",
          "Sudden Wall",   "adapt", False, "ACO"),
         ("Parallel Paths (multimodality)  most stresses PSO (diversity floor)",

@@ -23,7 +23,7 @@ from config import MAZE_TYPES, POPULATION_SIZES, ENTROPY_SAMPLE_INTERVAL
 ALGORITHMS = ["GA", "PSO", "ACO"]
 ALGO_COLORS = {"GA": "#3a86ff", "PSO": "#e07b39", "ACO": "#57cc99"}
 MAZE_SLUGS = {
-    "U-Trap": "u_trap",
+    "Shortest Path Trap": "shortest_path_trap",
     "Sudden Wall": "sudden_wall",
     "Parallel Paths": "parallel_paths",
 }
@@ -340,7 +340,7 @@ def figure_latex_summary_table(rows: list, out_dir: str) -> None:
                         return "N/A"
                     return f"{v:.{decimals}f}"
 
-                maze_short = {"U-Trap": "U-Trap", "Sudden Wall": "SW", "Parallel Paths": "PP"}.get(maze, maze)
+                maze_short = {"Shortest Path Trap": "SPT", "Sudden Wall": "SW", "Parallel Paths": "PP"}.get(maze, maze)
                 row_str = (
                     f"{algo} & {maze_short} & {pop} & "
                     f"{sr:.2f} & "

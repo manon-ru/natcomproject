@@ -91,7 +91,7 @@ def _run_one(task):
 
 def main():
     ap = argparse.ArgumentParser(description="GA sensitivity sweep: mutation_rate × chromosome_length")
-    ap.add_argument("--maze", default="U-Trap", choices=["U-Trap", "Sudden Wall", "Parallel Paths"])
+    ap.add_argument("--maze", default="Shortest Path Trap", choices=["Shortest Path Trap", "Sudden Wall", "Parallel Paths"])
     ap.add_argument("--trials", type=int, default=10, help="trials per cell (default 10)")
     ap.add_argument("--instances", type=int, default=1, help="distinct maze instances (default 1)")
     args = ap.parse_args()

@@ -1,7 +1,7 @@
 """
 ga_iteration_budget_sweep.py — Investigate whether GA can succeed given more iterations.
 
-Tests proposal-spec GA (mutation_rate=0.3, chromosome_length=160, pop=50) on U-Trap 40×40
+Tests proposal-spec GA (mutation_rate=0.3, chromosome_length=160, pop=50) on Shortest Path Trap 40×40
 across iteration budgets ranging from 610 (proposal) to 50,000.
 
 Hypothesis: if GA's failure is iteration-bound, larger budgets should yield non-zero
@@ -37,7 +37,7 @@ def _run_one(task):
     """(max_iterations, instance_seed, trial_seed) -> dict"""
     max_iters, instance_seed, trial_seed = task
 
-    maze = generate_maze(MAZE_WIDTH, MAZE_HEIGHT, seed=instance_seed, maze_type="U-Trap")
+    maze = generate_maze(MAZE_WIDTH, MAZE_HEIGHT, seed=instance_seed, maze_type="Shortest Path Trap")
     initial_optimal = maze.shortest_path()
     if initial_optimal is None:
         return None
@@ -93,7 +93,7 @@ def main():
     total = len(tasks)
     print(f"═══ GA Iteration Budget Sweep ═══")
     print(f"  Params: pop=50, μ=0.3, L=160 (proposal-spec)")
-    print(f"  Maze: U-Trap 40×40, seed={instance_seed}")
+    print(f"  Maze: Shortest Path Trap 40×40, seed={instance_seed}")
     print(f"  Budgets: {budgets}")
     print(f"  Trials per budget: {args.trials}")
     print(f"  Total runs: {total}")
@@ -173,7 +173,7 @@ def main():
     ax1.axvline(x=610, color="gray", linestyle=":", alpha=0.4)
     ax1.text(610, 0.5, "proposal\nbudget", ha="center", va="center", fontsize=8, alpha=0.6)
 
-    plt.title(f"GA on U-Trap 40×40 (proposal-spec: pop=50, μ=0.3, L=160)\n"
+    plt.title(f"GA on Shortest Path Trap 40×40 (proposal-spec: pop=50, μ=0.3, L=160)\n"
               f"Success rate and best-found distance vs iteration budget")
     fig.tight_layout()
 
