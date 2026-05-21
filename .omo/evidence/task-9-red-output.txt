@@ -1,0 +1,59 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.0.3, pluggy-1.6.0 -- /Users/robert/Code/natcomproject/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/robert/Code/natcomproject
+configfile: pyproject.toml
+collecting ... collected 7 items
+
+tests/test_pso_characterization.py::test_run_returns_required_dict_keys PASSED [ 14%]
+tests/test_pso_characterization.py::test_run_success_path_starts_at_start PASSED [ 28%]
+tests/test_pso_characterization.py::test_run_success_path_ends_at_goal PASSED [ 42%]
+tests/test_pso_characterization.py::test_reproducibility_with_np_random_seed FAILED [ 57%]
+tests/test_pso_integration.py::test_run_completes_on_small_maze PASSED   [ 71%]
+tests/test_pso_integration.py::test_run_completes_with_disruption PASSED [ 85%]
+tests/test_pso_integration.py::test_run_with_different_pop_sizes PASSED  [100%]
+
+=================================== FAILURES ===================================
+___________________ test_reproducibility_with_np_random_seed ___________________
+
+    def test_reproducibility_with_np_random_seed():
+        """
+        PSO must produce identical output for same np.random seed.
+        Per canonical PSO: uses np.random exclusively (after P4 fix).
+        NOTE: This test FAILS on current pso.py because it uses stdlib random.random()
+        which is NOT controlled by np.random.seed().
+        """
+        maze = trivial_3x3()
+    
+        np.random.seed(42)
+        pso1 = PSO(maze, num_particles=5)
+        result1 = pso1.run(max_iterations=50)
+    
+        np.random.seed(42)
+        pso2 = PSO(maze, num_particles=5)
+        result2 = pso2.run(max_iterations=50)
+    
+        assert result1["success"] == result2["success"], (
+            "Same np.random seed must produce same success outcome. "
+            "Current pso.py uses stdlib random which is not seeded by np.random.seed()."
+        )
+>       assert result1["path"] == result2["path"], (
+            "Same np.random seed must produce identical paths. "
+            "Current pso.py uses stdlib random which is not seeded by np.random.seed()."
+        )
+E       AssertionError: Same np.random seed must produce identical paths. Current pso.py uses stdlib random which is not seeded by np.random.seed().
+E       assert [(0, 0), (0, ...1, 2), (2, 2)] == [(0, 0), (1, ...2, 1), (2, 2)]
+E         
+E         At index 1 diff: (0, 1) != (1, 0)
+E         
+E         Full diff:
+E           [
+E               (
+E                   0,...
+E         
+E         ...Full output truncated (23 lines hidden), use '-vv' to show
+
+tests/test_pso_characterization.py:71: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_pso_characterization.py::test_reproducibility_with_np_random_seed
+========================= 1 failed, 6 passed in 0.17s ==========================
