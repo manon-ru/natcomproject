@@ -1,0 +1,45 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.0.3, pluggy-1.6.0 -- /Users/robert/Code/natcomproject/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/robert/Code/natcomproject
+configfile: pyproject.toml
+collecting ... collected 5 items
+
+tests/test_aco_invariants.py::test_no_import_random FAILED               [ 20%]
+tests/test_aco_invariants.py::test_entropy_history_sampled_every_10_iterations PASSED [ 40%]
+tests/test_aco_invariants.py::test_pheromone_matrix_shape PASSED         [ 60%]
+tests/test_aco_invariants.py::test_run_returns_required_dict_keys PASSED [ 80%]
+tests/test_aco_invariants.py::test_successful_path_ends_at_goal PASSED   [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_no_import_random _____________________________
+
+    def test_no_import_random():
+        """ACO must use np.random exclusively, not stdlib random (A4 fix).
+    
+        WILL FAIL on current aco.py: `import random` exists at line 11 but is
+        never called — only np.random.choice is used (line 77).
+        """
+        source = open(
+            Path(__file__).parent.parent / "src" / "algorithms" / "aco.py"
+        ).read()
+>       assert "import random" not in source, (
+            "aco.py must not import stdlib random. "
+            "Use np.random exclusively. Remove `import random` to fix the A4 bug."
+        )
+E       AssertionError: aco.py must not import stdlib random. Use np.random exclusively. Remove `import random` to fix the A4 bug.
+E       assert 'import random' not in '"""\nAnt Co...n        }\n'
+E         
+E         'import random' is contained here:
+E           """
+E           Ant Colony Optimization for grid-based maze navigation.
+E           
+E           NOTE ON PHEROMONE REPRESENTATION: This implementation stores pheromone
+E           values per CELL rather than per EDGE. Akka & Khaber (cited in the proposal...
+E         
+E         ...Full output truncated (183 lines hidden), use '-vv' to show
+
+tests/test_aco_invariants.py:41: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_aco_invariants.py::test_no_import_random - AssertionError: ...
+========================= 1 failed, 4 passed in 0.13s ==========================
