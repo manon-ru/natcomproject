@@ -1,8 +1,9 @@
 import os
 import random
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from algorithms.ga import GeneticAlgorithm
 from maze.environment import MazeEnvironment
@@ -39,17 +40,6 @@ def sample_chromosomes():
 
     paths = [ind["path"] for ind in population] + crossover_samples + mutate_samples
     return ga, paths
-
-
-def assert_valid_paths(ga, paths):
-    maze = ga.maze
-    for path in paths:
-        assert path[0] == maze.start
-        assert 1 <= len(path) <= ga.max_path_length
-        assert len(set(path)) == len(path)
-        for left, right in zip(path, path[1:]):
-            assert right in maze.neighbors(*left)
-            assert not maze.has_wall_between(left, right)
 
 
 def test_path_starts_at_maze_start():
