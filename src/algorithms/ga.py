@@ -181,10 +181,14 @@ class GeneticAlgorithm:
         path = ind["path"]
         if len(path) <= 2:
             return ind
-        # Pick a random truncation point (excluding start at index 0)
-        truncate_at = random.randint(1, len(path) - 1)
-        truncated = path[:truncate_at]
-        new_path = self._random_walk(truncated)
+        new_path = path
+        for _ in range(3):
+            truncate_at = random.randint(1, len(path) - 1)
+            truncated = path[:truncate_at]
+            candidate = self._random_walk(truncated)
+            if len(candidate) > len(truncated):
+                return {"path": candidate}
+            new_path = candidate
         return {"path": new_path}
 
     # ── Run loop ─────────────────────────────────────────────────────────────
