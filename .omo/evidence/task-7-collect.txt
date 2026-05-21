@@ -1,0 +1,6 @@
+tests/test_pso_position_update.py::test_position_update_adds_velocity
+tests/test_pso_position_update.py::test_discretization_floor_plus_half
+tests/test_pso_position_update.py::test_wall_collision_clamps_position_and_zeros_velocity
+tests/test_pso_position_update.py::test_out_of_bounds_treated_as_wall
+
+4 tests collected in 0.17s
