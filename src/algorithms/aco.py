@@ -8,7 +8,6 @@ per-cell choice is a project-specific design that reduces memory and is
 consistent with the cell-by-cell agent movement model. This deviation is
 noted in the report's Approach section.
 """
-import random
 import numpy as np
 from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
@@ -128,7 +127,7 @@ class ACO:
                 curr_pos = ant["path"][-1]
                 
                 # Freeze ant if it reached the goal so it doesn't wander off
-                if curr_pos == self.maze.goal and wall_dropped:
+                if curr_pos == self.maze.goal:
                     continue
                     
                 next_cell = self.choose_next(curr_pos[0], curr_pos[1], ant["visited"])
@@ -140,8 +139,6 @@ class ACO:
                     self.global_history.append(curr_pos)
                     self.global_history.append(next_cell)
                     self.global_history.append(NAN_NODE)
-                    
-                    self.pheromones[next_cell[1], next_cell[0]] += self.pheromone_deposit
                 else:
                     if len(ant["path"]) > 1:
                         old_pos = ant["path"].pop()
@@ -165,6 +162,15 @@ class ACO:
                                 "snapshot_history": self.snapshot_history,
                                 "disruption_iteration": disruption_iteration_recorded,
                             }
+
+            # Canonical AS deposit: Q/L on each cell of completed paths (Dorigo 1996)
+            for ant in ants:
+                if ant["path"] and ant["path"][-1] == self.maze.goal:
+                    path_length = len(ant["path"]) - 1
+                    if path_length > 0:
+                        deposit_per_cell = self.pheromone_deposit / path_length
+                        for cell in ant["path"]:
+                            self.pheromones[cell[1], cell[0]] += deposit_per_cell
 
             # NEW: Only return if we have a success AND we've passed the forced minimum
             if first_success_result is not None and iteration >= forced_min_iterations:
