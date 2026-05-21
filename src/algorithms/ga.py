@@ -122,9 +122,21 @@ class GeneticAlgorithm:
         # Common cells appearing in both parents (excluding the shared start cell)
         common = [c for c in path_a if c in set_b and c != self.maze.start]
         if not common:
-            return {"path": path_a[:]}
-
-        if len(common) >= 2:
+            # Adjacency-aware splice: find (A_i, B_j) where B_j ∈ maze.neighbors(*A_i) and B_j ∈ path_b
+            candidates = []
+            for idx_a in range(1, len(path_a)):
+                a_cell = path_a[idx_a]
+                for b_cell in self.maze.neighbors(*a_cell):
+                    if b_cell in set_b:
+                        candidates.append((idx_a, b_cell))
+            if candidates:
+                idx_a, b_cell = random.choice(candidates)
+                idx_b = path_b.index(b_cell)
+                child_path = path_a[:idx_a + 1] + path_b[idx_b:]
+            else:
+                # Tertiary fallback: fresh random walk from start
+                child_path = self._random_walk([self.maze.start])
+        elif len(common) >= 2:
             # Two-point: pick two common cells, sorted by their position in parent A
             picks = random.sample(common, 2)
             picks.sort(key=lambda c: path_a.index(c))
