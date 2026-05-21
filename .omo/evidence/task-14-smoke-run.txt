@@ -1,1 +1,0 @@
-success: False iters: 300 entropy_samples: 30

@@ -1,6 +1,0 @@
-tests/test_pso_velocity_update.py::test_velocity_update_matches_canonical_formula
-tests/test_pso_velocity_update.py::test_particle_has_velocity_attribute
-tests/test_pso_velocity_update.py::test_particle_has_continuous_position
-tests/test_pso_velocity_update.py::test_velocity_uses_np_random_not_stdlib_random
-
-4 tests collected in 0.10s

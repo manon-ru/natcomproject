@@ -6,7 +6,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from algorithms.pso import PSO
-from tests.fixtures.small_mazes import corridor_5x1, simple_choice_3x3, trivial_3x3
+from tests.fixtures.small_mazes import corridor_5x1, trivial_3x3
 
 
 def make_particle(position, velocity, start_cell):
@@ -26,7 +26,7 @@ def test_position_update_adds_velocity():
     pso = PSO(maze, num_particles=1)
     particle = make_particle((2.0, 3.0), (1.5, -0.7), (2, 3))
 
-    pso.update_particle(particle, [maze.goal])
+    pso.update_particle(particle, np.array([maze.goal]))  # type: ignore[arg-type]
 
     np.testing.assert_allclose(particle["position"], np.array([3.5, 2.3]))
 
@@ -44,7 +44,7 @@ def test_discretization_floor_plus_half():
 
     for position, expected_cell in cases:
         particle = make_particle(position, (0.0, 0.0), (0, 0))
-        pso.update_particle(particle, [maze.goal])
+        pso.update_particle(particle, np.array([maze.goal]))  # type: ignore[arg-type]
         assert particle["path"][-1] == expected_cell
 
 
@@ -55,7 +55,7 @@ def test_wall_collision_clamps_position_and_zeros_velocity():
     pso = PSO(maze, num_particles=1)
     particle = make_particle((1.0, 0.0), (1.5, 0.0), (1, 0))
 
-    pso.update_particle(particle, [maze.goal])
+    pso.update_particle(particle, np.array([maze.goal]))  # type: ignore[arg-type]
 
     np.testing.assert_allclose(particle["velocity"], np.array([0.0, 0.0]))
     np.testing.assert_allclose(particle["position"], np.array([1.0, 0.0]))
@@ -67,7 +67,7 @@ def test_out_of_bounds_treated_as_wall():
     pso = PSO(maze, num_particles=1)
     particle = make_particle((0.0, 0.0), (-2.0, 0.0), (0, 0))
 
-    pso.update_particle(particle, [maze.goal])
+    pso.update_particle(particle, np.array([maze.goal]))  # type: ignore[arg-type]
 
     np.testing.assert_allclose(particle["velocity"], np.array([0.0, 0.0]))
     np.testing.assert_allclose(particle["position"], np.array([0.0, 0.0]))
@@ -79,7 +79,7 @@ def test_valid_move_updates_position_and_path():
     pso = PSO(maze, num_particles=1)
     particle = make_particle((1.0, 0.0), (1.5, 0.0), (1, 0))
 
-    pso.update_particle(particle, [maze.goal])
+    pso.update_particle(particle, np.array([maze.goal]))  # type: ignore[arg-type]
 
     np.testing.assert_allclose(particle["position"], np.array([2.5, 0.0]))
     assert particle["path"][-1] == (2, 0)

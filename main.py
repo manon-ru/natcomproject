@@ -13,6 +13,7 @@ import sys
 import os
 import time
 import multiprocessing
+from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
@@ -78,21 +79,30 @@ def main() -> None:
     multiprocessing.set_start_method("spawn", force=True)
 
     start = time.time()
-    done = 0
 
+    bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]"
+
+    interrupted = False
     with ResultsWriter(csv_path) as writer:
-        def on_done(result):
-            nonlocal done
-            writer.write(result)
-            done += 1
-            if done % 50 == 0 or done == total:
-                dt = time.time() - start
-                eta = dt / done * (total - done) if done < total else 0.0
-                print(f"[{done}/{total}] elapsed={dt:.1f}s eta={eta:.1f}s")
+        with tqdm(total=total, unit="run", bar_format=bar_fmt, dynamic_ncols=True) as bar:
+            def on_done(result):
+                writer.write(result)
+                algo = result.get("algo", "?")
+                maze = result.get("maze_type", "?")
+                bar.set_postfix(algo=algo, maze=maze, refresh=False)
+                bar.update(1)
 
-        run_experiment(tasks, num_workers=num_workers, on_complete=on_done)
+            try:
+                run_experiment(tasks, num_workers=num_workers, on_complete=on_done)
+            except KeyboardInterrupt:
+                interrupted = True
+                bar.close()
 
-    print(f"Done. {done}/{total} results written to {csv_path}")
+    dt = time.time() - start
+    if interrupted:
+        print(f"Interrupted. Partial results written to {csv_path} after {dt:.1f}s")
+        sys.exit(130)
+    print(f"Done. {total} results written to {csv_path} in {dt:.1f}s")
 
 
 if __name__ == "__main__":

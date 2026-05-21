@@ -183,18 +183,41 @@ def run_single_trial(task: tuple) -> dict:
     }
 
 
+def _kill_pool(executor: ProcessPoolExecutor) -> None:
+    """Forcefully terminate all worker processes in a ProcessPoolExecutor."""
+    procs = list(getattr(executor, "_processes", {}).values())
+    for p in procs:
+        try:
+            p.terminate()
+        except Exception:
+            pass
+    for p in procs:
+        try:
+            p.join(timeout=2)
+        except Exception:
+            pass
+    for p in procs:
+        if p.is_alive():
+            try:
+                p.kill()
+            except Exception:
+                pass
+
+
 def run_experiment(
     tasks: list,
     num_workers: int,
     on_complete: Callable[[dict], None],
 ) -> None:
-    """Run tasks in parallel. Calls on_complete(result_dict) per finished task."""
-    total = len(tasks)
-    done = 0
-    start = time.time()
+    """Run tasks in parallel. Calls on_complete(result_dict) per finished task.
 
-    with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        futures = {executor.submit(run_single_trial, task): task for task in tasks}
+    On KeyboardInterrupt, queued tasks are cancelled and running workers are
+    terminated immediately instead of being drained.
+    """
+    executor = ProcessPoolExecutor(max_workers=num_workers)
+    futures = {executor.submit(run_single_trial, task): task for task in tasks}
+
+    try:
         for future in as_completed(futures):
             task = futures[future]
             try:
@@ -207,8 +230,12 @@ def run_experiment(
                 )
                 continue
             on_complete(result)
-            done += 1
-            if done % 50 == 0 or done == total:
-                dt = time.time() - start
-                eta = dt / done * (total - done) if done < total else 0
-                print(f"[{done}/{total}] elapsed={dt:.1f}s eta={eta:.1f}s")
+    except KeyboardInterrupt:
+        print("\n[INTERRUPT] Cancelling queued tasks and terminating workers...", file=sys.stderr)
+        for f in futures:
+            f.cancel()
+        _kill_pool(executor)
+        executor.shutdown(wait=False, cancel_futures=True)
+        raise
+    else:
+        executor.shutdown(wait=True)
