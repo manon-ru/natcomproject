@@ -151,8 +151,9 @@ def main():
         visualize_maze(
             maze,
             optimal_path=true_optimal_path,
-            best_found_path=result["path"] if result["success"] else None,
+            best_found_path=result.get("path"),
             all_paths=[history] if history else None,
+            highlight_wall=maze.dynamic_wall if args.maze == "Sudden Wall" else None,
             title=f"{args.algo} on {args.maze} (pop={args.pop}, seed={args.seed}) — "
                   f"{'SUCCESS' if result['success'] else 'FAILED'}",
             show=True,

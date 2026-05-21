@@ -6,6 +6,7 @@ def visualize_maze(
     maze: MazeEnvironment,
     optimal_path: list[tuple] | None = None,
     all_paths: list[list[tuple]] | None = None,
+    best_found_path: list[tuple] | None = None,
     alt_path: list[tuple] | None = None,
     highlight_wall: tuple | None = None,
     title: str = "Maze",
@@ -15,6 +16,8 @@ def visualize_maze(
     """Render the maze with optional paths and highlighted walls.
 
     `optimal_path` is drawn in lime green (primary route).
+    `best_found_path` is drawn in orange (best discovered route, even if the
+                      run did not reach the goal).
     `alt_path`     is drawn in orange    (secondary route, e.g. long path
                                            after a Sudden Wall is added or
                                            the second equal route in
@@ -51,9 +54,10 @@ def visualize_maze(
                 ys = [node[1] for node in history_list]
                 ax.plot(xs, ys, color="royalblue", lw=line_weight, alpha=0.1, zorder=1)
 
-    if alt_path and len(alt_path) > 1:
-        xs = [p[0] for p in alt_path]
-        ys = [p[1] for p in alt_path]
+    path_to_draw = best_found_path if best_found_path is not None else alt_path
+    if path_to_draw and len(path_to_draw) > 1:
+        xs = [p[0] for p in path_to_draw]
+        ys = [p[1] for p in path_to_draw]
         ax.plot(xs, ys, color="orange", lw=line_weight * 1.5, alpha=0.75, zorder=1.5)
 
     if optimal_path and len(optimal_path) > 1:

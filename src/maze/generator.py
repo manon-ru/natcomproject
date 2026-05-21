@@ -221,57 +221,40 @@ def _build_sudden_wall(maze, W, H):
 
 
 # Maze 3: Parallel Paths (multimodality).
-# Two RANDOM non-crossing monotonic routes from S to G - different per seed.
-# Path A starts with R (and ends with D); path B starts with D (and ends with
-# R). At every intermediate step path B's row is strictly larger than path
-# A's row, so the two paths share only S and G. Both paths have length
-# 2N - 1 cells. Cells off either path are decorated with DFS dead-end
-# branches, each branch attached to exactly one path - so the maze still has
-# exactly two S-G routes.
+# Two symmetric routes from S to G. Path A is a meandering corridor in the
+# upper half of the grid; path B is its mirror across the main diagonal. This
+# keeps the layout balanced while making both routes feel like real maze paths,
+# not just borders. A short detour is then inserted very close to the goal on
+# path B.
 
-def _generate_random_non_crossing_paths(N):
-    interior_a = ["R"] * (N - 2) + ["D"] * (N - 2)
-    random.shuffle(interior_a)
-    moves_a = ["R"] + interior_a + ["D"]
+def _random_dyck_moves(n):
+    """Return a random Dyck path of semilength n as U/D moves."""
+    if n == 0:
+        return []
+    split = random.randint(0, n - 1)
+    return ["U"] + _random_dyck_moves(split) + ["D"] + _random_dyck_moves(n - 1 - split)
+
+
+def _generate_symmetric_parallel_paths(N):
+    if N < 2:
+        raise ValueError("Parallel Paths requires a grid of at least 2x2.")
+
+    # Primitive Dyck path: U + Dyck(N-2) + D. Interpreted as R/D moves, this
+    # stays strictly above the diagonal until the final step, so its diagonal
+    # mirror shares only S and G.
+    moves_a = ["R"] + ["R" if move == "U" else "D" for move in _random_dyck_moves(N - 2)] + ["D"]
 
     path_a = [(0, 0)]
-    for m in moves_a:
+    for move in moves_a:
         x, y = path_a[-1]
-        path_a.append((x + 1, y) if m == "R" else (x, y + 1))
+        path_a.append((x + 1, y) if move == "R" else (x, y + 1))
 
-    path_b = [(0, 0), (0, 1)]
-    bx, by = 0, 1
-    r_left = N - 1
-    d_left = N - 2
-    total = 2 * (N - 1)
-    for step in range(2, total + 1):
-        ax_at, ay_at = path_a[step]
-        if step == total:
-            move = "R"
-        else:
-            can_r = r_left > 0 and by > ay_at
-            can_d = d_left > 0
-            if can_r and can_d:
-                move = random.choice(("R", "D"))
-            elif can_r:
-                move = "R"
-            elif can_d:
-                move = "D"
-            else:
-                raise RuntimeError(f"Stuck generating path B at step {step}")
-        if move == "R":
-            bx += 1
-            r_left -= 1
-        else:
-            by += 1
-            d_left -= 1
-        path_b.append((bx, by))
-
+    path_b = [(y, x) for (x, y) in path_a]
     return path_a, path_b
 
 
-DETOUR_DEPTH = 3                    # Detour adds 2 * DETOUR_DEPTH = 6 extra cells.
-DETOUR_NEAR_END_STEPS = 10          # Detour location restricted to last K interior steps of B.
+DETOUR_DEPTH = 2                    # Short detour adds 2 * DETOUR_DEPTH = 4 extra cells.
+DETOUR_NEAR_END_STEPS = 6           # Keep the detour tightly clustered near the goal.
 
 
 def _detour_cells(path_b, i, depth, dir_sign):
@@ -307,8 +290,8 @@ def _try_insert_detour_on_b(path_a, path_b, N,
     """Insert a depth-d perpendicular detour on path B near the goal.
 
     A depth-d detour replaces a single unit step of B with a rectangular excursion
-    of 2*d+1 steps, adding exactly 2*d cells to path B. With the default depth=3
-    the detour visits 6 extra cells. Candidates are restricted to the last
+    of 2*d+1 steps, adding exactly 2*d cells to path B. With the default depth=2
+    the detour visits 4 extra cells. Candidates are restricted to the last
     `near_end_steps` interior positions of path B so the detour sits near the goal,
     where the proposal's "small detour near the end of one route" places it.
     A candidate is feasible iff every detour cell is inside the grid, not on path
@@ -341,7 +324,9 @@ def _try_insert_detour_on_b(path_a, path_b, N,
                 if is_feasible(cells):
                     candidates.append((i, cells))
         if candidates:
-            i, cells = random.choice(candidates)
+            best_i = max(i for i, _ in candidates)
+            best_candidates = [item for item in candidates if item[0] == best_i]
+            i, cells = random.choice(best_candidates)
             return path_b[: i + 1] + cells + path_b[i + 1 :]
 
     return path_b
@@ -373,14 +358,14 @@ def _build_parallel_paths(maze, W, H):
         raise ValueError("Parallel Paths currently requires a square maze (W == H).")
     N = W
 
-    # Retry path generation until a near-end detour fits. Empirically 1-2 attempts
-    # suffice for N=40 because most random shuffles leave room near (N-1, N-1).
     max_attempts = 200
     for _ in range(max_attempts):
-        path_a, path_b_base = _generate_random_non_crossing_paths(N)
+        path_a, path_b_base = _generate_symmetric_parallel_paths(N)
         path_b = _try_insert_detour_on_b(path_a, path_b_base, N)
         if len(path_b) > len(path_b_base):
             break
+    else:
+        raise RuntimeError("Failed to insert the near-goal detour in Parallel Paths")
     assert path_a[0] == (0, 0) and path_a[-1] == (N - 1, N - 1)
     assert path_b[0] == (0, 0) and path_b[-1] == (N - 1, N - 1)
 
