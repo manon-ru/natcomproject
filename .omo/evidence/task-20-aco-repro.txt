@@ -1,0 +1,3 @@
+PASS: ACO is reproducible with np.random.seed(42)
+  success=True, iterations=20
+ACO exit=0

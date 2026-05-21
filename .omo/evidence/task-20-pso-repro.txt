@@ -1,0 +1,3 @@
+PASS: PSO is reproducible with np.random.seed(42)
+  success=False, iterations=100
+PSO exit=0
