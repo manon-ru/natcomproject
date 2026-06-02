@@ -1,0 +1,299 @@
+Statistical analysis
+======================================================================
+Input: results/runs.csv   Runs: 2700
+Bootstrap: 10,000 resamples, 95% percentile intervals.
+Pairwise: two-sided Mann-Whitney U, Holm correction within each metric,
+rank-biserial effect size (positive = first algorithm tends higher).
+
+1. Per-cell means with 95% bootstrap CIs
+----------------------------------------------------------------------
+
+[success_overall]
+  ACO  Parallel Paths       pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Parallel Paths       pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Parallel Paths       pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Shortest Path Trap   pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Shortest Path Trap   pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Shortest Path Trap   pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Sudden Wall          pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Sudden Wall          pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Sudden Wall          pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Parallel Paths       pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Parallel Paths       pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Parallel Paths       pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Shortest Path Trap   pop=20   n=100  mean=0.000  95% CI [0.000, 0.000]
+  GA   Shortest Path Trap   pop=50   n=100  mean=0.000  95% CI [0.000, 0.000]
+  GA   Shortest Path Trap   pop=150  n=100  mean=0.000  95% CI [0.000, 0.000]
+  GA   Sudden Wall          pop=20   n=100  mean=0.420  95% CI [0.320, 0.510]
+  GA   Sudden Wall          pop=50   n=100  mean=0.470  95% CI [0.370, 0.570]
+  GA   Sudden Wall          pop=150  n=100  mean=0.650  95% CI [0.550, 0.740]
+  PSO  Parallel Paths       pop=20   n=100  mean=0.970  95% CI [0.930, 1.000]
+  PSO  Parallel Paths       pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Parallel Paths       pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Shortest Path Trap   pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Shortest Path Trap   pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Shortest Path Trap   pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Sudden Wall          pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Sudden Wall          pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Sudden Wall          pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+
+[iterations]
+  ACO  Parallel Paths       pop=20   n=100  mean=79.180  95% CI [78.620, 79.860]
+  ACO  Parallel Paths       pop=50   n=100  mean=78.360  95% CI [78.140, 78.640]
+  ACO  Parallel Paths       pop=150  n=100  mean=78.040  95% CI [78.000, 78.120]
+  ACO  Shortest Path Trap   pop=20   n=100  mean=351.300  95% CI [330.100, 373.501]
+  ACO  Shortest Path Trap   pop=50   n=100  mean=298.100  95% CI [281.780, 315.140]
+  ACO  Shortest Path Trap   pop=150  n=100  mean=276.260  95% CI [260.700, 292.421]
+  ACO  Sudden Wall          pop=20   n=100  mean=531.940  95% CI [491.810, 574.032]
+  ACO  Sudden Wall          pop=50   n=100  mean=490.690  95% CI [457.039, 524.701]
+  ACO  Sudden Wall          pop=150  n=100  mean=464.100  95% CI [433.060, 496.380]
+  GA   Parallel Paths       pop=20   n=100  mean=1.120  95% CI [1.000, 1.320]
+  GA   Parallel Paths       pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Parallel Paths       pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Shortest Path Trap   pop=20   n=100  mean=2304.000  95% CI [2183.200, 2428.205]
+  GA   Shortest Path Trap   pop=50   n=100  mean=2304.000  95% CI [2182.995, 2426.000]
+  GA   Shortest Path Trap   pop=150  n=100  mean=2304.000  95% CI [2184.190, 2429.010]
+  GA   Sudden Wall          pop=20   n=100  mean=3070.290  95% CI [2695.115, 3448.141]
+  GA   Sudden Wall          pop=50   n=100  mean=2680.710  95% CI [2265.497, 3094.955]
+  GA   Sudden Wall          pop=150  n=100  mean=2125.300  95% CI [1705.817, 2560.015]
+  PSO  Parallel Paths       pop=20   n=100  mean=107.600  95% CI [86.760, 133.820]
+  PSO  Parallel Paths       pop=50   n=100  mean=84.520  95% CI [82.279, 87.140]
+  PSO  Parallel Paths       pop=150  n=100  mean=84.700  95% CI [82.280, 87.560]
+  PSO  Shortest Path Trap   pop=20   n=100  mean=491.120  95% CI [442.639, 543.941]
+  PSO  Shortest Path Trap   pop=50   n=100  mean=406.280  95% CI [374.940, 439.800]
+  PSO  Shortest Path Trap   pop=150  n=100  mean=339.100  95% CI [311.198, 369.881]
+  PSO  Sudden Wall          pop=20   n=100  mean=669.680  95% CI [609.409, 734.670]
+  PSO  Sudden Wall          pop=50   n=100  mean=623.730  95% CI [565.346, 683.141]
+  PSO  Sudden Wall          pop=150  n=100  mean=585.920  95% CI [534.558, 639.100]
+
+[diversity_floor]
+  ACO  Parallel Paths       pop=20   n=100  mean=3.383  95% CI [3.291, 3.474]
+  ACO  Parallel Paths       pop=50   n=100  mean=3.999  95% CI [3.888, 4.102]
+  ACO  Parallel Paths       pop=150  n=100  mean=4.476  95% CI [4.340, 4.609]
+  ACO  Shortest Path Trap   pop=20   n=100  mean=4.053  95% CI [4.013, 4.091]
+  ACO  Shortest Path Trap   pop=50   n=100  mean=5.173  95% CI [5.122, 5.224]
+  ACO  Shortest Path Trap   pop=150  n=100  mean=6.295  95% CI [6.221, 6.366]
+  ACO  Sudden Wall          pop=20   n=100  mean=3.614  95% CI [3.489, 3.735]
+  ACO  Sudden Wall          pop=50   n=100  mean=4.763  95% CI [4.608, 4.905]
+  ACO  Sudden Wall          pop=150  n=100  mean=5.718  95% CI [5.542, 5.879]
+  GA   Parallel Paths       pop=20   n=100  mean=3.334  95% CI [3.269, 3.399]
+  GA   Parallel Paths       pop=50   n=100  mean=3.873  95% CI [3.808, 3.936]
+  GA   Parallel Paths       pop=150  n=100  mean=4.237  95% CI [4.170, 4.303]
+  GA   Shortest Path Trap   pop=20   n=100  mean=0.000  95% CI [0.000, 0.000]
+  GA   Shortest Path Trap   pop=50   n=100  mean=0.072  95% CI [0.048, 0.096]
+  GA   Shortest Path Trap   pop=150  n=100  mean=0.277  95% CI [0.214, 0.340]
+  GA   Sudden Wall          pop=20   n=100  mean=0.816  95% CI [0.709, 0.931]
+  GA   Sudden Wall          pop=50   n=100  mean=1.952  95% CI [1.765, 2.141]
+  GA   Sudden Wall          pop=150  n=100  mean=2.409  95% CI [2.137, 2.682]
+  PSO  Parallel Paths       pop=20   n=100  mean=1.410  95% CI [1.212, 1.623]
+  PSO  Parallel Paths       pop=50   n=100  mean=1.556  95% CI [1.352, 1.773]
+  PSO  Parallel Paths       pop=150  n=100  mean=1.820  95% CI [1.575, 2.078]
+  PSO  Shortest Path Trap   pop=20   n=100  mean=3.750  95% CI [3.603, 3.881]
+  PSO  Shortest Path Trap   pop=50   n=100  mean=5.110  95% CI [5.046, 5.169]
+  PSO  Shortest Path Trap   pop=150  n=100  mean=5.997  95% CI [5.864, 6.111]
+  PSO  Sudden Wall          pop=20   n=100  mean=3.900  95% CI [3.790, 3.988]
+  PSO  Sudden Wall          pop=50   n=100  mean=5.071  95% CI [4.952, 5.163]
+  PSO  Sudden Wall          pop=150  n=100  mean=6.037  95% CI [5.881, 6.163]
+
+[mean_entropy]
+  ACO  Parallel Paths       pop=20   n=100  mean=2.152  95% CI [2.048, 2.252]
+  ACO  Parallel Paths       pop=50   n=100  mean=2.427  95% CI [2.307, 2.542]
+  ACO  Parallel Paths       pop=150  n=100  mean=2.622  95% CI [2.491, 2.752]
+  ACO  Shortest Path Trap   pop=20   n=100  mean=3.561  95% CI [3.510, 3.610]
+  ACO  Shortest Path Trap   pop=50   n=100  mean=4.243  95% CI [4.176, 4.309]
+  ACO  Shortest Path Trap   pop=150  n=100  mean=4.832  95% CI [4.736, 4.926]
+  ACO  Sudden Wall          pop=20   n=100  mean=3.739  95% CI [3.701, 3.778]
+  ACO  Sudden Wall          pop=50   n=100  mean=4.577  95% CI [4.519, 4.634]
+  ACO  Sudden Wall          pop=150  n=100  mean=5.278  95% CI [5.195, 5.361]
+  GA   Parallel Paths       pop=20   n=100  mean=3.334  95% CI [3.267, 3.399]
+  GA   Parallel Paths       pop=50   n=100  mean=3.873  95% CI [3.808, 3.937]
+  GA   Parallel Paths       pop=150  n=100  mean=4.237  95% CI [4.169, 4.303]
+  GA   Shortest Path Trap   pop=20   n=100  mean=0.387  95% CI [0.338, 0.438]
+  GA   Shortest Path Trap   pop=50   n=100  mean=0.527  95% CI [0.458, 0.598]
+  GA   Shortest Path Trap   pop=150  n=100  mean=0.675  95% CI [0.582, 0.768]
+  GA   Sudden Wall          pop=20   n=100  mean=2.195  95% CI [2.128, 2.257]
+  GA   Sudden Wall          pop=50   n=100  mean=2.897  95% CI [2.794, 2.997]
+  GA   Sudden Wall          pop=150  n=100  mean=3.371  95% CI [3.243, 3.497]
+  PSO  Parallel Paths       pop=20   n=100  mean=1.058  95% CI [0.929, 1.195]
+  PSO  Parallel Paths       pop=50   n=100  mean=1.096  95% CI [0.987, 1.215]
+  PSO  Parallel Paths       pop=150  n=100  mean=1.226  95% CI [1.104, 1.360]
+  PSO  Shortest Path Trap   pop=20   n=100  mean=3.313  95% CI [3.225, 3.394]
+  PSO  Shortest Path Trap   pop=50   n=100  mean=3.846  95% CI [3.754, 3.938]
+  PSO  Shortest Path Trap   pop=150  n=100  mean=4.249  95% CI [4.103, 4.385]
+  PSO  Sudden Wall          pop=20   n=100  mean=3.182  95% CI [3.110, 3.254]
+  PSO  Sudden Wall          pop=50   n=100  mean=3.765  95% CI [3.661, 3.872]
+  PSO  Sudden Wall          pop=150  n=100  mean=4.280  95% CI [4.152, 4.408]
+
+[path_optimality]
+  ACO  Parallel Paths       pop=20   n=100  mean=1.009  95% CI [1.005, 1.013]
+  ACO  Parallel Paths       pop=50   n=100  mean=1.004  95% CI [1.002, 1.007]
+  ACO  Parallel Paths       pop=150  n=100  mean=1.001  95% CI [1.000, 1.002]
+  ACO  Shortest Path Trap   pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Shortest Path Trap   pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Shortest Path Trap   pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Sudden Wall          pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Sudden Wall          pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  ACO  Sudden Wall          pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Parallel Paths       pop=20   n=100  mean=1.013  95% CI [1.009, 1.018]
+  GA   Parallel Paths       pop=50   n=100  mean=1.004  95% CI [1.001, 1.006]
+  GA   Parallel Paths       pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  GA   Shortest Path Trap   pop=20   n=0    mean=nan  95% CI [nan, nan]
+  GA   Shortest Path Trap   pop=50   n=0    mean=nan  95% CI [nan, nan]
+  GA   Shortest Path Trap   pop=150  n=0    mean=nan  95% CI [nan, nan]
+  GA   Sudden Wall          pop=20   n=42   mean=1.000  95% CI [1.000, 1.000]
+  GA   Sudden Wall          pop=50   n=47   mean=1.000  95% CI [1.000, 1.000]
+  GA   Sudden Wall          pop=150  n=65   mean=1.000  95% CI [1.000, 1.000]
+  PSO  Parallel Paths       pop=20   n=97   mean=1.021  95% CI [1.016, 1.025]
+  PSO  Parallel Paths       pop=50   n=100  mean=1.016  95% CI [1.011, 1.021]
+  PSO  Parallel Paths       pop=150  n=100  mean=1.014  95% CI [1.010, 1.019]
+  PSO  Shortest Path Trap   pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Shortest Path Trap   pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Shortest Path Trap   pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Sudden Wall          pop=20   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Sudden Wall          pop=50   n=100  mean=1.000  95% CI [1.000, 1.000]
+  PSO  Sudden Wall          pop=150  n=100  mean=1.000  95% CI [1.000, 1.000]
+
+[time_to_half_entropy]
+  ACO  Parallel Paths       pop=20   n=0    mean=nan  95% CI [nan, nan]
+  ACO  Parallel Paths       pop=50   n=0    mean=nan  95% CI [nan, nan]
+  ACO  Parallel Paths       pop=150  n=0    mean=nan  95% CI [nan, nan]
+  ACO  Shortest Path Trap   pop=20   n=0    mean=nan  95% CI [nan, nan]
+  ACO  Shortest Path Trap   pop=50   n=0    mean=nan  95% CI [nan, nan]
+  ACO  Shortest Path Trap   pop=150  n=0    mean=nan  95% CI [nan, nan]
+  ACO  Sudden Wall          pop=20   n=1    mean=190.000  95% CI [190.000, 190.000]
+  ACO  Sudden Wall          pop=50   n=1    mean=160.000  95% CI [160.000, 160.000]
+  ACO  Sudden Wall          pop=150  n=0    mean=nan  95% CI [nan, nan]
+  GA   Parallel Paths       pop=20   n=0    mean=nan  95% CI [nan, nan]
+  GA   Parallel Paths       pop=50   n=0    mean=nan  95% CI [nan, nan]
+  GA   Parallel Paths       pop=150  n=0    mean=nan  95% CI [nan, nan]
+  GA   Shortest Path Trap   pop=20   n=100  mean=10.100  95% CI [10.000, 10.300]
+  GA   Shortest Path Trap   pop=50   n=100  mean=10.100  95% CI [10.000, 10.300]
+  GA   Shortest Path Trap   pop=150  n=100  mean=10.100  95% CI [10.000, 10.300]
+  GA   Sudden Wall          pop=20   n=95   mean=66.737  95% CI [52.103, 83.161]
+  GA   Sudden Wall          pop=50   n=52   mean=360.769  95% CI [163.654, 627.317]
+  GA   Sudden Wall          pop=150  n=49   mean=31.837  95% CI [23.265, 42.041]
+  PSO  Parallel Paths       pop=20   n=7    mean=14.286  95% CI [11.429, 18.571]
+  PSO  Parallel Paths       pop=50   n=5    mean=18.000  95% CI [14.000, 20.000]
+  PSO  Parallel Paths       pop=150  n=4    mean=17.500  95% CI [12.500, 20.000]
+  PSO  Shortest Path Trap   pop=20   n=3    mean=416.667  95% CI [130.000, 970.000]
+  PSO  Shortest Path Trap   pop=50   n=0    mean=nan  95% CI [nan, nan]
+  PSO  Shortest Path Trap   pop=150  n=0    mean=nan  95% CI [nan, nan]
+  PSO  Sudden Wall          pop=20   n=2    mean=280.000  95% CI [210.000, 350.000]
+  PSO  Sudden Wall          pop=50   n=2    mean=220.000  95% CI [140.000, 300.000]
+  PSO  Sudden Wall          pop=150  n=2    mean=230.000  95% CI [140.000, 320.000]
+
+
+2. Pairwise Mann-Whitney U (Holm-significant, p_holm < 0.05)
+----------------------------------------------------------------------
+  diversity_floor      Parallel Paths     pop=20   GA vs PSO: p_holm=6.51e-21  r=+0.79
+  diversity_floor      Parallel Paths     pop=20   PSO vs ACO: p_holm=4.43e-22  r=-0.81
+  diversity_floor      Parallel Paths     pop=50   GA vs PSO: p_holm=3.85e-23  r=+0.83
+  diversity_floor      Parallel Paths     pop=50   PSO vs ACO: p_holm=5.76e-25  r=-0.87
+  diversity_floor      Parallel Paths     pop=150  GA vs PSO: p_holm=1.16e-19  r=+0.76
+  diversity_floor      Parallel Paths     pop=150  GA vs ACO: p_holm=2.63e-03  r=-0.29
+  diversity_floor      Parallel Paths     pop=150  PSO vs ACO: p_holm=1.30e-23  r=-0.84
+  diversity_floor      Shortest Path Trap pop=20   GA vs PSO: p_holm=4.80e-37  r=-0.99
+  diversity_floor      Shortest Path Trap pop=20   GA vs ACO: p_holm=1.01e-37  r=-1.00
+  diversity_floor      Shortest Path Trap pop=20   PSO vs ACO: p_holm=3.93e-04  r=-0.33
+  diversity_floor      Shortest Path Trap pop=50   GA vs PSO: p_holm=1.60e-34  r=-1.00
+  diversity_floor      Shortest Path Trap pop=50   GA vs ACO: p_holm=1.60e-34  r=-1.00
+  diversity_floor      Shortest Path Trap pop=150  GA vs PSO: p_holm=4.34e-33  r=-1.00
+  diversity_floor      Shortest Path Trap pop=150  GA vs ACO: p_holm=4.34e-33  r=-1.00
+  diversity_floor      Shortest Path Trap pop=150  PSO vs ACO: p_holm=1.84e-03  r=-0.30
+  diversity_floor      Sudden Wall        pop=20   GA vs PSO: p_holm=5.21e-32  r=-0.98
+  diversity_floor      Sudden Wall        pop=20   GA vs ACO: p_holm=1.38e-32  r=-0.99
+  diversity_floor      Sudden Wall        pop=20   PSO vs ACO: p_holm=6.59e-03  r=+0.27
+  diversity_floor      Sudden Wall        pop=50   GA vs PSO: p_holm=1.49e-31  r=-0.98
+  diversity_floor      Sudden Wall        pop=50   GA vs ACO: p_holm=7.40e-31  r=-0.97
+  diversity_floor      Sudden Wall        pop=50   PSO vs ACO: p_holm=1.59e-02  r=+0.24
+  diversity_floor      Sudden Wall        pop=150  GA vs PSO: p_holm=1.48e-31  r=-0.98
+  diversity_floor      Sudden Wall        pop=150  GA vs ACO: p_holm=1.89e-29  r=-0.94
+  diversity_floor      Sudden Wall        pop=150  PSO vs ACO: p_holm=3.04e-02  r=+0.22
+  iterations           Parallel Paths     pop=20   GA vs PSO: p_holm=2.05e-37  r=-1.00
+  iterations           Parallel Paths     pop=20   GA vs ACO: p_holm=4.13e-40  r=-1.00
+  iterations           Parallel Paths     pop=20   PSO vs ACO: p_holm=2.80e-15  r=+0.63
+  iterations           Parallel Paths     pop=50   GA vs PSO: p_holm=6.59e-38  r=-1.00
+  iterations           Parallel Paths     pop=50   GA vs ACO: p_holm=3.20e-42  r=-1.00
+  iterations           Parallel Paths     pop=50   PSO vs ACO: p_holm=7.92e-19  r=+0.67
+  iterations           Parallel Paths     pop=150  GA vs PSO: p_holm=6.49e-38  r=-1.00
+  iterations           Parallel Paths     pop=150  GA vs ACO: p_holm=1.56e-43  r=-1.00
+  iterations           Parallel Paths     pop=150  PSO vs ACO: p_holm=4.47e-24  r=+0.74
+  iterations           Shortest Path Trap pop=20   GA vs PSO: p_holm=4.76e-33  r=+1.00
+  iterations           Shortest Path Trap pop=20   GA vs ACO: p_holm=4.61e-33  r=+1.00
+  iterations           Shortest Path Trap pop=20   PSO vs ACO: p_holm=1.82e-04  r=+0.34
+  iterations           Shortest Path Trap pop=50   GA vs PSO: p_holm=4.61e-33  r=+1.00
+  iterations           Shortest Path Trap pop=50   GA vs ACO: p_holm=4.61e-33  r=+1.00
+  iterations           Shortest Path Trap pop=50   PSO vs ACO: p_holm=5.70e-07  r=+0.44
+  iterations           Shortest Path Trap pop=150  GA vs PSO: p_holm=4.61e-33  r=+1.00
+  iterations           Shortest Path Trap pop=150  GA vs ACO: p_holm=4.61e-33  r=+1.00
+  iterations           Shortest Path Trap pop=150  PSO vs ACO: p_holm=2.57e-03  r=+0.28
+  iterations           Sudden Wall        pop=20   GA vs PSO: p_holm=5.19e-14  r=+0.64
+  iterations           Sudden Wall        pop=20   GA vs ACO: p_holm=4.21e-15  r=+0.67
+  iterations           Sudden Wall        pop=20   PSO vs ACO: p_holm=4.29e-03  r=+0.26
+  iterations           Sudden Wall        pop=50   GA vs PSO: p_holm=5.13e-08  r=+0.48
+  iterations           Sudden Wall        pop=50   GA vs ACO: p_holm=9.00e-10  r=+0.53
+  iterations           Sudden Wall        pop=50   PSO vs ACO: p_holm=4.29e-03  r=+0.26
+  iterations           Sudden Wall        pop=150  GA vs PSO: p_holm=4.29e-03  r=+0.24
+  iterations           Sudden Wall        pop=150  GA vs ACO: p_holm=7.40e-04  r=+0.31
+  iterations           Sudden Wall        pop=150  PSO vs ACO: p_holm=2.57e-03  r=+0.28
+  mean_entropy         Parallel Paths     pop=20   GA vs PSO: p_holm=6.95e-31  r=+0.96
+  mean_entropy         Parallel Paths     pop=20   GA vs ACO: p_holm=3.50e-31  r=+0.97
+  mean_entropy         Parallel Paths     pop=20   PSO vs ACO: p_holm=7.29e-22  r=-0.80
+  mean_entropy         Parallel Paths     pop=50   GA vs PSO: p_holm=6.92e-33  r=+1.00
+  mean_entropy         Parallel Paths     pop=50   GA vs ACO: p_holm=7.66e-33  r=+1.00
+  mean_entropy         Parallel Paths     pop=50   PSO vs ACO: p_holm=7.54e-26  r=-0.88
+  mean_entropy         Parallel Paths     pop=150  GA vs PSO: p_holm=6.92e-33  r=+1.00
+  mean_entropy         Parallel Paths     pop=150  GA vs ACO: p_holm=6.92e-33  r=+1.00
+  mean_entropy         Parallel Paths     pop=150  PSO vs ACO: p_holm=4.39e-26  r=-0.88
+  mean_entropy         Shortest Path Trap pop=20   GA vs PSO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Shortest Path Trap pop=20   GA vs ACO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Shortest Path Trap pop=20   PSO vs ACO: p_holm=6.28e-06  r=-0.37
+  mean_entropy         Shortest Path Trap pop=50   GA vs PSO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Shortest Path Trap pop=50   GA vs ACO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Shortest Path Trap pop=50   PSO vs ACO: p_holm=7.85e-09  r=-0.48
+  mean_entropy         Shortest Path Trap pop=150  GA vs PSO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Shortest Path Trap pop=150  GA vs ACO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Shortest Path Trap pop=150  PSO vs ACO: p_holm=9.95e-10  r=-0.51
+  mean_entropy         Sudden Wall        pop=20   GA vs PSO: p_holm=4.24e-31  r=-0.97
+  mean_entropy         Sudden Wall        pop=20   GA vs ACO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Sudden Wall        pop=20   PSO vs ACO: p_holm=1.39e-23  r=-0.84
+  mean_entropy         Sudden Wall        pop=50   GA vs PSO: p_holm=4.30e-19  r=-0.75
+  mean_entropy         Sudden Wall        pop=50   GA vs ACO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Sudden Wall        pop=50   PSO vs ACO: p_holm=1.26e-21  r=-0.80
+  mean_entropy         Sudden Wall        pop=150  GA vs PSO: p_holm=3.25e-15  r=-0.66
+  mean_entropy         Sudden Wall        pop=150  GA vs ACO: p_holm=6.92e-33  r=-1.00
+  mean_entropy         Sudden Wall        pop=150  PSO vs ACO: p_holm=1.06e-20  r=-0.78
+  path_optimality      Parallel Paths     pop=20   PSO vs ACO: p_holm=5.42e-03  r=+0.23
+  path_optimality      Parallel Paths     pop=50   GA vs PSO: p_holm=3.06e-04  r=-0.24
+  path_optimality      Parallel Paths     pop=50   PSO vs ACO: p_holm=7.67e-04  r=+0.23
+  path_optimality      Parallel Paths     pop=150  GA vs PSO: p_holm=2.67e-07  r=-0.28
+  path_optimality      Parallel Paths     pop=150  PSO vs ACO: p_holm=1.28e-06  r=+0.27
+  success_overall      Shortest Path Trap pop=20   GA vs PSO: p_holm=9.51e-44  r=-1.00
+  success_overall      Shortest Path Trap pop=20   GA vs ACO: p_holm=9.51e-44  r=-1.00
+  success_overall      Shortest Path Trap pop=50   GA vs PSO: p_holm=9.51e-44  r=-1.00
+  success_overall      Shortest Path Trap pop=50   GA vs ACO: p_holm=9.51e-44  r=-1.00
+  success_overall      Shortest Path Trap pop=150  GA vs PSO: p_holm=9.51e-44  r=-1.00
+  success_overall      Shortest Path Trap pop=150  GA vs ACO: p_holm=9.51e-44  r=-1.00
+  success_overall      Sudden Wall        pop=20   GA vs PSO: p_holm=4.17e-18  r=-0.58
+  success_overall      Sudden Wall        pop=20   GA vs ACO: p_holm=4.17e-18  r=-0.58
+  success_overall      Sudden Wall        pop=50   GA vs PSO: p_holm=4.71e-16  r=-0.53
+  success_overall      Sudden Wall        pop=50   GA vs ACO: p_holm=4.71e-16  r=-0.53
+  success_overall      Sudden Wall        pop=150  GA vs PSO: p_holm=1.41e-09  r=-0.35
+  success_overall      Sudden Wall        pop=150  GA vs ACO: p_holm=1.41e-09  r=-0.35
+
+  (95 of 129 tests significant after Holm; full table in statistical_analysis_pairwise.csv)
+
+
+3. Factor effects (Type II ANOVA)
+----------------------------------------------------------------------
+  success_overall    all mazes        population main effect   F=    7.03  p=9.02e-04 *
+  success_overall    all mazes        algorithm x population   F=    5.36  p=2.66e-04 *
+  iterations         all mazes        population main effect   F=    9.41  p=8.51e-05 *
+  iterations         all mazes        algorithm x population   F=    2.99  p=1.78e-02 *
+  diversity_floor    all mazes        population main effect   F= 1008.01  p=0.00e+00 *
+  diversity_floor    all mazes        algorithm x population   F=   34.65  p=3.05e-28 *
+  mean_entropy       all mazes        population main effect   F=  723.01  p=1.03e-251 *
+  mean_entropy       all mazes        algorithm x population   F=   12.08  p=9.91e-10 *
+  path_optimality    Parallel Paths   population main effect   F=   20.07  p=2.99e-09 *
+  path_optimality    Parallel Paths   algorithm x population   F=    1.16  p=3.29e-01  
+

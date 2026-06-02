@@ -1,0 +1,163 @@
+maze_type,pop_size,metric,algo_a,algo_b,u,p_raw,p_holm,rank_biserial,n_a,n_b,note
+Parallel Paths,20,success_overall,GA,PSO,5150.0,0.08273761607811554,1.0,0.030000000000000027,100,100,
+Parallel Paths,20,success_overall,GA,ACO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,20,success_overall,PSO,ACO,4850.0,0.08273761607811554,1.0,-0.030000000000000027,100,100,
+Parallel Paths,20,iterations,GA,PSO,0.0,9.324340224048549e-39,2.051354849290681e-37,-1.0,100,100,
+Parallel Paths,20,iterations,GA,ACO,0.0,1.653688737904794e-41,4.134221844761985e-40,-1.0,100,100,
+Parallel Paths,20,iterations,PSO,ACO,8131.0,2.1561744481979432e-16,2.8030267826573264e-15,0.6262000000000001,100,100,
+Parallel Paths,20,diversity_floor,GA,PSO,8941.5,5.915553910895439e-22,6.507109301984983e-21,0.7883,100,100,
+Parallel Paths,20,diversity_floor,GA,ACO,4646.0,0.38764586903393417,0.38764586903393417,-0.07079999999999997,100,100,
+Parallel Paths,20,diversity_floor,PSO,ACO,943.5,3.688696890775675e-23,4.426436268930811e-22,-0.8113,100,100,
+Parallel Paths,20,mean_entropy,GA,PSO,9816.0,5.789900253574238e-32,6.947880304289086e-31,0.9632000000000001,100,100,
+Parallel Paths,20,mean_entropy,GA,ACO,9845.0,2.5002881854886567e-32,3.5004034596841193e-31,0.9690000000000001,100,100,
+Parallel Paths,20,mean_entropy,PSO,ACO,980.0,9.108937511125709e-23,7.287150008900567e-22,-0.804,100,100,
+Parallel Paths,20,path_optimality,GA,PSO,4161.0,0.03458704086434496,0.5533926538295194,-0.1420618556701031,100,97,
+Parallel Paths,20,path_optimality,GA,ACO,5450.0,0.12271334866237371,1.0,0.09000000000000008,100,100,
+Parallel Paths,20,path_optimality,PSO,ACO,5975.5,0.0003190437042393167,0.005423742972068384,0.23206185567010307,97,100,
+Parallel Paths,20,time_to_half_entropy,GA,PSO,,,,,0,7,insufficient n
+Parallel Paths,20,time_to_half_entropy,GA,ACO,,,,,0,0,insufficient n
+Parallel Paths,20,time_to_half_entropy,PSO,ACO,,,,,7,0,insufficient n
+Parallel Paths,50,success_overall,GA,PSO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,50,success_overall,GA,ACO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,50,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,50,iterations,GA,PSO,0.0,2.8653361471153537e-39,6.590273138365313e-38,-1.0,100,100,
+Parallel Paths,50,iterations,GA,ACO,0.0,1.2300233941435667e-43,3.198060824773273e-42,-1.0,100,100,
+Parallel Paths,50,iterations,PSO,ACO,8346.0,5.657270009145821e-20,7.92017801280415e-19,0.6692,100,100,
+Parallel Paths,50,diversity_floor,GA,PSO,9159.0,2.9627807487698907e-24,3.851614973400858e-23,0.8318000000000001,100,100,
+Parallel Paths,50,diversity_floor,GA,ACO,4055.5,0.021079266516296137,0.06323779954888842,-0.18889999999999996,100,100,
+Parallel Paths,50,diversity_floor,PSO,ACO,671.0,3.8388207797319385e-26,5.758231169597908e-25,-0.8658,100,100,
+Parallel Paths,50,mean_entropy,GA,PSO,10000.0,2.5618550313305253e-34,6.917008584592418e-33,1.0,100,100,
+Parallel Paths,50,mean_entropy,GA,ACO,9977.0,5.105196003086791e-34,7.657794004630187e-33,0.9954000000000001,100,100,
+Parallel Paths,50,mean_entropy,PSO,ACO,609.0,7.544836386867177e-27,7.544836386867177e-26,-0.8782,100,100,
+Parallel Paths,50,path_optimality,GA,PSO,3800.0,1.608514301202804e-05,0.0003056177172285328,-0.24,100,100,
+Parallel Paths,50,path_optimality,GA,ACO,4950.0,0.7909227822010564,1.0,-0.010000000000000009,100,100,
+Parallel Paths,50,path_optimality,PSO,ACO,6150.0,4.261997203854686e-05,0.0007671594966938435,0.22999999999999998,100,100,
+Parallel Paths,50,time_to_half_entropy,GA,PSO,,,,,0,5,insufficient n
+Parallel Paths,50,time_to_half_entropy,GA,ACO,,,,,0,0,insufficient n
+Parallel Paths,50,time_to_half_entropy,PSO,ACO,,,,,5,0,insufficient n
+Parallel Paths,150,success_overall,GA,PSO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,150,success_overall,GA,ACO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,150,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Parallel Paths,150,iterations,GA,PSO,0.0,2.703909771772117e-39,6.489383452253081e-38,-1.0,100,100,
+Parallel Paths,150,iterations,GA,ACO,0.0,5.762466278480766e-45,1.5558658951898067e-43,-1.0,100,100,
+Parallel Paths,150,iterations,PSO,ACO,8695.0,2.9790058530487594e-25,4.4685087795731395e-24,0.7390000000000001,100,100,
+Parallel Paths,150,diversity_floor,GA,PSO,8815.0,1.160004334592146e-20,1.160004334592146e-19,0.7629999999999999,100,100,
+Parallel Paths,150,diversity_floor,GA,ACO,3544.0,0.0003760394126788918,0.0026322758887522427,-0.2912,100,100,
+Parallel Paths,150,diversity_floor,PSO,ACO,795.0,9.303414231995765e-25,1.302477992479407e-23,-0.841,100,100,
+Parallel Paths,150,mean_entropy,GA,PSO,10000.0,2.5621436691634012e-34,6.917008584592418e-33,1.0,100,100,
+Parallel Paths,150,mean_entropy,GA,ACO,10000.0,2.5621436691634012e-34,6.917008584592418e-33,1.0,100,100,
+Parallel Paths,150,mean_entropy,PSO,ACO,585.0,3.993786967433316e-27,4.393165664176648e-26,-0.883,100,100,
+Parallel Paths,150,path_optimality,GA,PSO,3600.0,1.2729371387655016e-08,2.6731679914075535e-07,-0.28,100,100,
+Parallel Paths,150,path_optimality,GA,ACO,4950.0,0.3221741190216618,1.0,-0.010000000000000009,100,100,
+Parallel Paths,150,path_optimality,PSO,ACO,6350.0,6.419610775319761e-08,1.2839221550639522e-06,0.27,100,100,
+Parallel Paths,150,time_to_half_entropy,GA,PSO,,,,,0,4,insufficient n
+Parallel Paths,150,time_to_half_entropy,GA,ACO,,,,,0,0,insufficient n
+Parallel Paths,150,time_to_half_entropy,PSO,ACO,,,,,4,0,insufficient n
+Shortest Path Trap,20,success_overall,GA,PSO,0.0,3.521615882394601e-45,9.508362882465422e-44,-1.0,100,100,
+Shortest Path Trap,20,success_overall,GA,ACO,0.0,3.521615882394601e-45,9.508362882465422e-44,-1.0,100,100,
+Shortest Path Trap,20,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Shortest Path Trap,20,iterations,GA,PSO,9990.0,2.9767685994922738e-34,4.762829759187638e-33,0.998,100,100,
+Shortest Path Trap,20,iterations,GA,ACO,10000.0,2.2008424586725616e-34,4.6076746338274324e-33,1.0,100,100,
+Shortest Path Trap,20,iterations,PSO,ACO,6722.0,2.5932460484693682e-05,0.00018152722339285577,0.34440000000000004,100,100,
+Shortest Path Trap,20,diversity_floor,GA,PSO,50.0,1.8452375252229598e-38,4.797617565579695e-37,-0.99,100,100,
+Shortest Path Trap,20,diversity_floor,GA,ACO,0.0,3.7473805117792467e-39,1.0117927381803966e-37,-1.0,100,100,
+Shortest Path Trap,20,diversity_floor,PSO,ACO,3344.5,4.364146961061104e-05,0.0003927732264954994,-0.33109999999999995,100,100,
+Shortest Path Trap,20,mean_entropy,GA,PSO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Shortest Path Trap,20,mean_entropy,GA,ACO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Shortest Path Trap,20,mean_entropy,PSO,ACO,3151.0,6.283915543747157e-06,6.283915543747157e-06,-0.3698,100,100,
+Shortest Path Trap,20,path_optimality,GA,PSO,,,,,0,100,insufficient n
+Shortest Path Trap,20,path_optimality,GA,ACO,,,,,0,100,insufficient n
+Shortest Path Trap,20,path_optimality,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Shortest Path Trap,20,time_to_half_entropy,GA,PSO,,,,,100,3,insufficient n
+Shortest Path Trap,20,time_to_half_entropy,GA,ACO,,,,,100,0,insufficient n
+Shortest Path Trap,20,time_to_half_entropy,PSO,ACO,,,,,3,0,insufficient n
+Shortest Path Trap,50,success_overall,GA,PSO,0.0,3.521615882394601e-45,9.508362882465422e-44,-1.0,100,100,
+Shortest Path Trap,50,success_overall,GA,ACO,0.0,3.521615882394601e-45,9.508362882465422e-44,-1.0,100,100,
+Shortest Path Trap,50,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Shortest Path Trap,50,iterations,GA,PSO,10000.0,2.2032087259340224e-34,4.6076746338274324e-33,1.0,100,100,
+Shortest Path Trap,50,iterations,GA,ACO,10000.0,2.1978570256330794e-34,4.6076746338274324e-33,1.0,100,100,
+Shortest Path Trap,50,iterations,PSO,ACO,7205.5,7.124451597395123e-08,5.699561277916098e-07,0.44110000000000005,100,100,
+Shortest Path Trap,50,diversity_floor,GA,PSO,0.0,6.404050091913346e-36,1.6010125229783366e-34,-1.0,100,100,
+Shortest Path Trap,50,diversity_floor,GA,ACO,0.0,6.40484401435336e-36,1.6010125229783366e-34,-1.0,100,100,
+Shortest Path Trap,50,diversity_floor,PSO,ACO,4456.0,0.1841530033358305,0.368306006671661,-0.10880000000000001,100,100,
+Shortest Path Trap,50,mean_entropy,GA,PSO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Shortest Path Trap,50,mean_entropy,GA,ACO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Shortest Path Trap,50,mean_entropy,PSO,ACO,2590.0,3.9244769303010725e-09,7.848953860602145e-09,-0.482,100,100,
+Shortest Path Trap,50,path_optimality,GA,PSO,,,,,0,100,insufficient n
+Shortest Path Trap,50,path_optimality,GA,ACO,,,,,0,100,insufficient n
+Shortest Path Trap,50,path_optimality,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Shortest Path Trap,50,time_to_half_entropy,GA,PSO,,,,,100,0,insufficient n
+Shortest Path Trap,50,time_to_half_entropy,GA,ACO,,,,,100,0,insufficient n
+Shortest Path Trap,50,time_to_half_entropy,PSO,ACO,,,,,0,0,insufficient n
+Shortest Path Trap,150,success_overall,GA,PSO,0.0,3.521615882394601e-45,9.508362882465422e-44,-1.0,100,100,
+Shortest Path Trap,150,success_overall,GA,ACO,0.0,3.521615882394601e-45,9.508362882465422e-44,-1.0,100,100,
+Shortest Path Trap,150,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Shortest Path Trap,150,iterations,GA,PSO,10000.0,2.1994736454710628e-34,4.6076746338274324e-33,1.0,100,100,
+Shortest Path Trap,150,iterations,GA,ACO,10000.0,2.194130778013063e-34,4.6076746338274324e-33,1.0,100,100,
+Shortest Path Trap,150,iterations,PSO,ACO,6402.0,0.0006152754647822088,0.0025688481696147566,0.2804,100,100,
+Shortest Path Trap,150,diversity_floor,GA,PSO,0.0,1.8860056989713232e-34,4.3375667720706915e-33,-1.0,100,100,
+Shortest Path Trap,150,diversity_floor,GA,ACO,0.0,1.8858985965524745e-34,4.3375667720706915e-33,-1.0,100,100,
+Shortest Path Trap,150,diversity_floor,PSO,ACO,3492.0,0.00023013444392657454,0.0018410755514125963,-0.3016,100,100,
+Shortest Path Trap,150,mean_entropy,GA,PSO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Shortest Path Trap,150,mean_entropy,GA,ACO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Shortest Path Trap,150,mean_entropy,PSO,ACO,2428.0,3.317283005232456e-10,9.951849015697367e-10,-0.5144,100,100,
+Shortest Path Trap,150,path_optimality,GA,PSO,,,,,0,100,insufficient n
+Shortest Path Trap,150,path_optimality,GA,ACO,,,,,0,100,insufficient n
+Shortest Path Trap,150,path_optimality,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Shortest Path Trap,150,time_to_half_entropy,GA,PSO,,,,,100,0,insufficient n
+Shortest Path Trap,150,time_to_half_entropy,GA,ACO,,,,,100,0,insufficient n
+Shortest Path Trap,150,time_to_half_entropy,PSO,ACO,,,,,0,0,insufficient n
+Sudden Wall,20,success_overall,GA,PSO,2100.0,1.9852713755401547e-19,4.169069888634325e-18,-0.5800000000000001,100,100,
+Sudden Wall,20,success_overall,GA,ACO,2100.0,1.9852713755401547e-19,4.169069888634325e-18,-0.5800000000000001,100,100,
+Sudden Wall,20,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Sudden Wall,20,iterations,GA,PSO,8206.0,4.714224115812279e-15,5.185646527393507e-14,0.6412,100,100,
+Sudden Wall,20,iterations,GA,ACO,8337.0,3.5051571364407886e-16,4.206188563728946e-15,0.6674,100,100,
+Sudden Wall,20,iterations,PSO,ACO,6305.5,0.0014290690461061357,0.0042872071383184066,0.2611000000000001,100,100,
+Sudden Wall,20,diversity_floor,GA,PSO,87.0,2.607440590939992e-33,5.214881181879984e-32,-0.9826,100,100,
+Sudden Wall,20,diversity_floor,GA,ACO,39.0,6.5707636764897395e-34,1.3798603720628452e-32,-0.9922,100,100,
+Sudden Wall,20,diversity_floor,PSO,ACO,6332.5,0.0010981125502496946,0.006588675301498167,0.26649999999999996,100,100,
+Sudden Wall,20,mean_entropy,GA,PSO,164.0,3.2652185994749996e-32,4.244784179317499e-31,-0.9672,100,100,
+Sudden Wall,20,mean_entropy,GA,ACO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Sudden Wall,20,mean_entropy,PSO,ACO,815.0,1.5424214300642531e-24,1.3881792870578277e-23,-0.837,100,100,
+Sudden Wall,20,path_optimality,GA,PSO,2100.0,1.0,1.0,0.0,42,100,
+Sudden Wall,20,path_optimality,GA,ACO,2100.0,1.0,1.0,0.0,42,100,
+Sudden Wall,20,path_optimality,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Sudden Wall,20,time_to_half_entropy,GA,PSO,,,,,95,2,insufficient n
+Sudden Wall,20,time_to_half_entropy,GA,ACO,,,,,95,1,insufficient n
+Sudden Wall,20,time_to_half_entropy,PSO,ACO,,,,,2,1,insufficient n
+Sudden Wall,50,success_overall,GA,PSO,2350.0,2.4785184825275012e-17,4.709185116802253e-16,-0.53,100,100,
+Sudden Wall,50,success_overall,GA,ACO,2350.0,2.4785184825275012e-17,4.709185116802253e-16,-0.53,100,100,
+Sudden Wall,50,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Sudden Wall,50,iterations,GA,PSO,7384.0,5.700008763787843e-09,5.130007887409058e-08,0.4767999999999999,100,100,
+Sudden Wall,50,iterations,GA,ACO,7653.0,9.000923402111556e-11,9.000923402111557e-10,0.5306,100,100,
+Sudden Wall,50,iterations,PSO,ACO,6283.5,0.001718564015759275,0.0042872071383184066,0.25669999999999993,100,100,
+Sudden Wall,50,diversity_floor,GA,PSO,117.0,8.254406745901642e-33,1.4857932142622955e-31,-0.9766,100,100,
+Sudden Wall,50,diversity_floor,GA,ACO,174.0,4.354156957445787e-32,7.4020668276578375e-31,-0.9652000000000001,100,100,
+Sudden Wall,50,diversity_floor,PSO,ACO,6208.0,0.003170629468399001,0.015853147341995003,0.24160000000000004,100,100,
+Sudden Wall,50,mean_entropy,GA,PSO,1273.0,8.603731378883633e-20,4.301865689441816e-19,-0.7454000000000001,100,100,
+Sudden Wall,50,mean_entropy,GA,ACO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Sudden Wall,50,mean_entropy,PSO,ACO,1008.0,1.7947264204696674e-22,1.2563084943287671e-21,-0.7984,100,100,
+Sudden Wall,50,path_optimality,GA,PSO,2350.0,1.0,1.0,0.0,47,100,
+Sudden Wall,50,path_optimality,GA,ACO,2350.0,1.0,1.0,0.0,47,100,
+Sudden Wall,50,path_optimality,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Sudden Wall,50,time_to_half_entropy,GA,PSO,,,,,52,2,insufficient n
+Sudden Wall,50,time_to_half_entropy,GA,ACO,,,,,52,1,insufficient n
+Sudden Wall,50,time_to_half_entropy,PSO,ACO,,,,,2,1,insufficient n
+Sudden Wall,150,success_overall,GA,PSO,3250.0,8.29070456858138e-11,1.4094197766588346e-09,-0.35,100,100,
+Sudden Wall,150,success_overall,GA,ACO,3250.0,8.29070456858138e-11,1.4094197766588346e-09,-0.35,100,100,
+Sudden Wall,150,success_overall,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Sudden Wall,150,iterations,GA,PSO,6177.0,0.00403735513866709,0.0042872071383184066,0.23540000000000005,100,100,
+Sudden Wall,150,iterations,GA,ACO,6571.5,0.0001233524343788507,0.0007401146062731043,0.3143,100,100,
+Sudden Wall,150,iterations,PSO,ACO,6422.0,0.0005137696339229513,0.0025688481696147566,0.2844,100,100,
+Sudden Wall,150,diversity_floor,GA,PSO,115.0,7.800458168487283e-33,1.4820870520125838e-31,-0.977,100,100,
+Sudden Wall,150,diversity_floor,GA,ACO,289.0,1.1804142833433691e-30,1.8886628533493906e-29,-0.9422,100,100,
+Sudden Wall,150,diversity_floor,PSO,ACO,6093.0,0.007598636266967752,0.03039454506787101,0.2185999999999999,100,100,
+Sudden Wall,150,mean_entropy,GA,PSO,1704.0,8.1326803220797795e-16,3.2530721288319118e-15,-0.6592,100,100,
+Sudden Wall,150,mean_entropy,GA,ACO,0.0,2.5621436691634012e-34,6.917008584592418e-33,-1.0,100,100,
+Sudden Wall,150,mean_entropy,PSO,ACO,1104.0,1.7616827122332018e-21,1.057009627339921e-20,-0.7792,100,100,
+Sudden Wall,150,path_optimality,GA,PSO,3250.0,1.0,1.0,0.0,65,100,
+Sudden Wall,150,path_optimality,GA,ACO,3250.0,1.0,1.0,0.0,65,100,
+Sudden Wall,150,path_optimality,PSO,ACO,5000.0,1.0,1.0,0.0,100,100,
+Sudden Wall,150,time_to_half_entropy,GA,PSO,,,,,49,2,insufficient n
+Sudden Wall,150,time_to_half_entropy,GA,ACO,,,,,49,0,insufficient n
+Sudden Wall,150,time_to_half_entropy,PSO,ACO,,,,,2,0,insufficient n
