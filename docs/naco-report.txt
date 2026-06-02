@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage[table,dvipsnames]{xcolor}
 \geometry{margin=2.5cm}
 \usepackage{parskip}
@@ -83,7 +84,7 @@ Because our objective is to compare \emph{inherent} information architectures ra
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{lllp{6.6cm}}
+\begin{tabularx}{\textwidth}{lllX}
 \toprule
 \textbf{Algorithm} & \textbf{Parameter} & \textbf{Value} & \textbf{Source / rationale} \\
 \midrule
@@ -105,7 +106,7 @@ Because our objective is to compare \emph{inherent} information architectures ra
  & Evaporation $\rho$ & 0.1 & From Shrestha et al. \cite{shrestha2024}; long pheromone memory \\
  & Initial pheromone & 0.8 & As above \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Fixed algorithm parameters and the source or rationale for each. Population size is not listed here because it is a deliberate experimental factor (Section~\ref{design}), tested at 20, 50, and 150 for all three algorithms.}
 \label{tab:parameters}
 \end{table}
