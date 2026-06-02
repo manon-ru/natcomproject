@@ -1,0 +1,249 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\geometry{margin=2.5cm}
+\usepackage{parskip}
+\usepackage{xcolor, soul}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[table]{xcolor}
+
+\sethlcolor{Apricot}
+
+\title{Project Report Group 27: Comparing GA, PSO, and ACO for\\
+Pathfinding in 2D Mazes}
+\author{\large Manon Leijser \and Nemo Ingendaa \and Robert Blaauwendraad}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Problem Statement}
+While standard algorithms like A* excel in static environments and simple grids, they often struggle in unpredictable environments with deceptive dead ends. When an environment suddenly changes, these solvers often have to start over. In contrast, natural computing algorithms use a population to solve problems, allowing the group to adapt together.
+
+The central theoretical question of this project is not which algorithm performs best, but how different information architectures shape a population's adaptive behavior in environments that impose different challenges. We focus on three paradigms representing distinct architectures of inter-agent coupling:
+
+\begin{itemize}
+    \item \textbf{Genetic Algorithms (GA)} are decoupled. Active agents share no runtime information during their evaluation. Knowledge is instead passed vertically between distinct generations through selection pressure and recombination.
+    \item \textbf{Particle Swarm Optimization (PSO)} is tightly coupled. Every agent immediately knows the group's best position, producing high social pressure.
+    \item \textbf{Ant Colony Optimization (ACO)} is environmentally coupled. Agents communicate indirectly through pheromone trails on the grid. The environment itself becomes the collective memory.
+\end{itemize}
+
+These paradigms give us a natural axis along which to study coupling: no shared memory (GA), continuous global memory (PSO), and distributed environmental memory (ACO). By evaluating them in environments designed to stress different coupling mechanisms, we can characterize when each architecture fails and how effectively a population recovers its diversity.
+
+\paragraph{Research Question.} To what extent do the information architectures of GA, PSO, and ACO, defined by their varying degrees of agent coupling, shape a population's adaptive behavior when the environment imposes distinct challenges of deception, non-stationarity, and multimodality?
+
+We decompose this into three subquestions:
+\begin{itemize}
+    \item \textbf{SQ1 (architecture).} How does the coupling mechanism of each algorithm determine the way its population distributes itself across the search space over time?
+    \item \textbf{SQ2 (environment).} How does the type of environmental challenge interact with each coupling architecture to produce distinct failure and recovery patterns?
+    \item \textbf{SQ3 (scale).} To what extent does population size modulate adaptive capacity, and does increasing scale compensate for or amplify architectural weaknesses?
+\end{itemize}
+
+\section{Hypotheses}
+
+We organize our predictions into three hypothesis families, each tied to a subquestion.
+
+\paragraph{H1 (Coupling shapes diversity dynamics; SQ1).} Each architecture produces a distinct entropy signature when agents explore the search space. We expect PSO to show the sharpest entropy collapse on encountering a strong attractor, since the global best pulls all particles simultaneously toward the same position. We expect GA to maintain more stable entropy, because decoupled agents cannot lock onto a single misleading path together. We expect ACO to sit between the two, with gradual rather than catastrophic decline, because pheromone trails build and erode over time rather than updating instantaneously.
+
+\paragraph{H2 (Environmental challenge interacts with coupling; SQ2).} Each maze type should stress a different architecture most strongly. Deception (Maze 1) should affect PSO most, because tight coupling accelerates commitment to the misleading attractor. Non-stationarity (Maze 2) should affect ACO most, because strong pheromone trails on invalidated paths persist until evaporation enables rerouting. Multimodality (Maze 3) should affect PSO most in terms of spatial spread, because social pressure forces the swarm onto a single path even when alternatives are equally valid.
+
+\paragraph{H3 (Population scale modulates but does not reverse architectural effects; SQ3).} We expect larger populations to amplify PSO's weakness rather than compensate for it. More particles pulled toward the same wrong attractor still produces collapse, only with more agents involved. We expect GA to benefit most from scale, since decoupled random variation improves with additional independent samples. We expect ACO to be comparatively insensitive to population within the tested range, because pheromone dynamics dominate over ant count.
+
+\section{Related Work}
+Sariff et al. \cite{sariff2009} applied GA and ACO to robot path planning in static environments, finding that ACO becomes more robust as complexity increases. Shrestha et al. \cite{10.5120/ijca2024923402} extended this line by benchmarking GA, PSO, and ACO on a common 2D environment with parameters tuned for a waypoint-based representation.
+
+To characterize population-internal dynamics, we track spatial diversity using Shannon entropy. Masisi et al. \cite{masisi2008} demonstrated that higher diversity consistently produces better outcomes in optimization tasks. We adapt this measure to the spatial distribution of agents across the maze, giving us a quantitative signal for premature convergence and recovery speed rather than just final performance.
+
+Ansari et al. \cite{ansari2015} studied efficiency in complex pathfinding, noting that heuristic searches require excessive iterations to escape dead ends. We use their efficiency framework to structure our benchmarks, while extending the approach to investigate the underlying causes of these delays.
+
+Our work differs from Shrestha et al. \cite{10.5120/ijca2024923402} in four ways. First, we introduce dynamic environments by blocking established paths mid-run (Maze 2, gets further explained in section \ref{environments}) to test adaptation under disruption, which Shrestha et al. identify as future work. Second, we measure population-internal dynamics via position-wise Shannon entropy rather than only endpoint metrics. This provides a continuous, quantitative signal of spatial diversity and premature convergence. Third, we isolate specific environmental properties (deception, non-stationarity, and multimodality) using specifically designed maze structures, rather than varying complexity monotonically through random obstacle counts. Fourth, we frame the three algorithms as instances of distinct information architectures and derive predictions about failure modes from that framing, rather than treating them as interchangeable metaheuristics. Together, these extensions fill a gap in the comparative literature: how memory architectures degrade and recover when the environment itself changes.
+
+\section{Approach}
+The simulation framework is built from scratch in Python, utilizing code from previous assignments for the core GA and PSO implementations.
+
+\subsection{Environment and Algorithm Setup}
+We model the environment as a 2D grid where agents must navigate from a start node to a goal node in the fewest steps. We chose a discrete grid over a continuous space to ensure that spatial memory (like ACO's pheromones) maps directly to the navigation space, isolating the architectural differences without complex interpolation steps.
+
+Due to computational constraints and our primary focus on comparing inherent information architectures rather than maximizing absolute performance, we did not perform extensive parameter tuning. Instead, algorithm parameters are drawn from multiple literature sources, chosen to match each algorithm's most comparable problem formulation (summarized in Table \ref{tab:parameters}). Because no single paper tunes all three algorithms on a grid-based maze with cell-by-cell navigation, we combined sources and implemented necessary adaptations.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Algorithm} & \textbf{Parameter} & \textbf{Value} \\
+\midrule
+\textbf{GA}
+ & Selection & Roulette wheel \\
+ & Crossover & Two-point at common cells (rate 0.5) \\
+ & Mutation & Truncate-and-regrow (rate 0.3) \\
+\midrule
+\textbf{PSO}
+ & Inertia ($\omega$) & 1.0 \\
+ & Cognitive coefficient ($c_1$) & 0.1 \\
+ & Social coefficient ($c_2$) & 0.2 \\
+\midrule
+\textbf{ACO}
+ & Pheromone exponent ($\alpha$) & 1 \\
+ & Heuristic exponent ($\beta$) & 5 \\
+ & Pheromone deposit ($Q$) & 2 \\
+ & Evaporation rate ($\rho$) & 0.1 \\
+ & Initial pheromone & 0.8 \\
+\bottomrule
+\end{tabular}
+\caption{Summary of specific parameters used for each algorithm.}
+\label{tab:parameters}
+\end{table}
+
+\paragraph{Genetic Algorithms (GA) Setup}
+% Chromosomes encode a variable-length sequence of cells visited from the start. We initially implemented a binary direction-string encoding (a fixed-length sequence of U/D/L/R moves), chosen so that standard bit-flip mutation could be applied. However, this produced 0\% success across all experimental cells. Diagnostic sweeps confirmed the failure was structural rather than parametric: direction-string crossover has no inheritable invariant, as splicing two successful strings almost never produces a valid path.
+
+% Therefore, we adopted the cell-sequence representation following Lamini et al. \cite{benhlima} and the variable-length grid chromosome following Tu \& Yang \cite{tu}. This differs from Shrestha et al. \cite{10.5120/ijca2024923402}, whose fixed-width chromosome encodes indices into a set of randomly scattered waypoints in a 2D Euclidean workspace. In our grid-based maze, the path itself is the natural representation. The numerical parameters and operator types follow Shrestha's specification where possible, with adaptations needed to fit the cell-sequence chromosome. Their roulette wheel selection and a mutation rate of 0.3 remains the same. Two-point crossover is restricted to cells shared between parents to preserve connectivity, and mutation shifts from per-bit flipping to a truncate-and-regrow method to ensure valid paths.
+
+Chromosomes encode a sequence of cells visited from the start of varying length. We initially implemented a binary direction encoding (a fixed length sequence of up, down, left, and right moves), chosen so that standard bit-flip mutation could be applied. However, this produced a 0\% success rate across all experimental cells. Further testing confirmed the failure was structural rather than a problem with the parameters, because direction crossover does not preserve successful traits. Splicing two successful strings almost never produces a valid path.
+
+Therefore, we adopted the cell-sequence representation following Lamini et al. \cite{benhlima} and the variable-length grid chromosome following Tu \& Yang \cite{tu}. This differs from Shrestha et al. \cite{10.5120/ijca2024923402}, whose fixed-width chromosome encodes indices into a set of randomly scattered waypoints in a 2D Euclidean workspace. In our grid-based maze, the path itself is the natural representation. The numerical parameters and operator types follow Shrestha's specification where possible, with adaptations needed to fit the cell-sequence chromosome. Their roulette wheel selection and a mutation rate of 0.3 remain the same. Two-point crossover is restricted to cells shared between parents to preserve connectivity. For mutation, instead of flipping individual bits, we cut the path at a random point and generate a new valid route from there to ensure the paths remain valid.
+
+\paragraph{Particle Swarm Optimization (PSO) Setup}
+For PSO, parameters are directly adopted from Shrestha et al. \cite{10.5120/ijca2024923402}. Note that the random coefficients $r_1$ and $r_2$ in the velocity update are runtime draws from $U(0,1)$ rather than hyperparameters.
+
+\paragraph{Ant Colony Optimization (ACO) Setup}
+ACO structural parameters are based on prior literature from Akka et al. \cite{akka}, while evaporation and initial pheromone values follow Shrestha et al. \cite{10.5120/ijca2024923402}. Akka et al. \cite{akka} uses a grid-based ACO formulation with cell-by-cell navigation that matches our setup more closely than either Sariff et al. \cite{sariff2009}, which operates on feasible-node graphs, or Shrestha et al. \cite{10.5120/ijca2024923402}, which uses waypoints. We abstract the colony size away from these structural baselines, because population scale is dynamically tested across our experiments.
+
+\paragraph{Population Size}
+Instead of using disparate algorithm-specific population sizes like the values of 70, 40, and 20 reported by Shrestha et al., we align the population sizes across all three algorithms. Every experiment tests GA, PSO, and ACO at shared population scales of 20, 50, and 150 agents. Comparing these architectures at identical scales isolates their internal coupling effects from mere population advantages.
+
+\subsection{Environments} \label{environments}
+We use three maze types, each designed to isolate a specific environmental challenge. For each type we generate 10 distinct instances that preserve the structural property of that maze type, and we run 10 independent trials per instance. This yields 100 runs per condition, and separates algorithmic stochasticity from maze-instance variance.
+
+\paragraph{Maze 1: Shortest Path Trap (deception).} Features a dead end placed near the goal. Agents are initially attracted toward the goal and enter the dead end. Escaping requires moving away from the goal, which goes against their standard navigation heuristic. This tests whether PSO becomes trapped when all particles follow a misleading global best, whether ACO wastes iterations strengthening useless pheromone trails in the dead end, and whether GA's random mutation allows escape.
+
+\paragraph{Maze 2: Sudden Wall (non-stationarity).} Two routes exist: a short path and a longer alternative. The short path is blocked at iteration $T=100$, after the population has settled into it. This tests recovery from environmental change. We expect PSO to pile up at the new wall because the swarm will continue to be pulled toward the historically best, but now stuck, particle. We expect ACO to be delayed by outdated environmental memory, as ants will persist on the blocked path until the old pheromones evaporate. Finally, we expect GA to adapt the most quickly, as its random exploration is not restricted by past memory or social leaders.
+
+\paragraph{Maze 3: Parallel Paths (multimodality).} Two routes of identical length are available at the start, with a small detour near the end of one route. This tests whether algorithms can spread across multiple valid paths simultaneously. We expect PSO to collapse onto one side due to social pressure, GA to struggle when crossover combines agents from opposite paths, and ACO to explore both routes and eventually favor the slightly shorter one.
+
+\subsection{Experimental Design}
+We perform a consolidated experiment with three factors: algorithm, maze type, and population size. This design answers all three subquestions from one coherent data set rather than treating them as separate studies.
+
+\begin{itemize}
+    \item \textbf{Algorithms:} GA, PSO, ACO (addresses SQ1).
+    \item \textbf{Maze types:} Shortest Path Trap, Sudden Wall, Parallel Paths (addresses SQ2).
+    \item \textbf{Population sizes:} 20, 50, 150 (addresses SQ3). The range covers Shrestha's reported values from 20 to 70 and extends to 150 to test scale effects.
+\end{itemize}
+
+Each of the 27 experimental cells is evaluated on 10 distinct maze instances (seeds) with 10 independent trials per instance. This yields 100 runs per condition for a total computational budget of 2,700 runs. To ensure fair comparison and reproducibility, we control the random seeds so that all three algorithms evaluated the exact same generated maze instances.
+
+This three-way factorial design allows us to analyze both the individual main effects of our variables and the interaction effects between them. Specifically, we are able to evaluate whether the impact of population size changes depending on the maze structure or if coupling dynamics scale differently across population sizes.
+
+\subsection{Evaluation Metrics}
+To evaluate how the three architectures adapt, we measure both their internal population dynamics and their final performance. We focus on spatial diversity and recovery speed to answer our main research questions, while also tracking standard success rates to ensure the algorithms actually solve the mazes.
+
+\paragraph{Spatial Diversity (Shannon Entropy).} A central tension in natural computing is the balance between exploration and exploitation. We measure this as spatial diversity: the degree to which agents are distributed across structurally distinct regions of the maze at any given iteration. We quantify this using position-wise Shannon entropy:
+\[
+H_i = -\sum_{j \in \Sigma} f_{ij} \log f_{ij}
+\]
+where $f_{ij}$ is the frequency of agents occupying cell $j$ at iteration $i$. The shape of this entropy curve is our main diagnostic of coupling behavior. A sharp cliff indicates rapid collapse consistent with tight coupling. A slow drift indicates lag in environmental memory. A noisy plateau indicates stochastic wandering. To compare the algorithms statistically, we extract three summary metrics from this curve:
+\begin{enumerate}
+    \item \textbf{Time to 50\% entropy loss} measures the speed of collapse by tracking the iterations required for entropy to drop to half of its maximum peak value. Measuring from the peak rather than the start ensures we capture the true speed of collapse only after the population has reached its maximum exploratory spread.
+    \item \textbf{Diversity floor} is defined as the absolute minimum entropy reached at any point after this peak exploration phase. This isolates the severity of the algorithm's worst convergence while ignoring the naturally low diversity of the initial starting state.
+    \item \textbf{Mean entropy} across the run measures the sustained diversity over the entire simulation.
+\end{enumerate}
+
+\paragraph{Adaptation time in Maze 2.} Iterations from disruption at $T = 100$ until the population's mean entropy first returns to 80\% of its pre-disruption value. A threshold is required because entropy recovers gradually and ``recovered" has no natural cutoff. We apply the same 80\% threshold to every algorithm, population size, and maze instance. Runs failing to recover the 80\% threshold before the iteration limit are excluded from the adaptation time average and are instead captured solely by the success rate metric. This addresses SQ2 by quantifying recovery speed after an environmental disruption.
+
+\paragraph{Success rate across 100 runs per experimental cell.} We define success as the algorithm reaching the goal within the given iteration limit ($10 \times \textbf{shortest path length}$). High spatial diversity is only valuable if the algorithm can actually solve the maze. Tracking this rate grounds our exploration data in actual performance and highlights any situations where an algorithm's coupling architecture prevents it from finishing the task.
+
+\paragraph{Path optimality relative to the A* optimum.} We compute this metric strictly for successful runs by comparing the algorithm's final path length to the absolute shortest path found with the A* algorithm. This ensures that high exploration behavior leads to an efficient route rather than just random wandering. It also provides a clear, objective baseline to judge the quality of the final solutions.
+
+
+\newpage
+\section{Results}
+\begin{table}[ht]
+\centering
+\small
+\rowcolors{2}{gray!30}{gray!0}
+\begin{tabular}{lllrrrrrrr}
+\toprule
+Algo & Maze & Pop & SR & Iters & Opt & $t_{50\%}$ & Floor & $\bar{H}$ & Adapt \\
+\midrule
+GA & SPT & 20 & 0.00 & 2304 & N/A & 10 & 0.00 & 0.42 & N/A \\
+GA & SPT & 50 & 0.00 & 2304 & N/A & 10 & 0.08 & 0.54 & N/A \\
+GA & SPT & 150 & 0.00 & 2304 & N/A & 10 & 0.28 & 0.68 & N/A \\
+GA & SW & 20 & 0.00 & 3958 & N/A & 100 & 0.75 & 2.24 & 8 \\
+GA & SW & 50 & 0.00 & 3958 & N/A & 528 & 1.78 & 2.88 & 26 \\
+GA & SW & 150 & 0.00 & 3958 & N/A & 251 & 2.35 & 3.25 & 48 \\
+GA & PP & 20 & 1.00 & 1 & 1.03 & N/A & 3.33 & 3.33 & N/A \\
+GA & PP & 50 & 1.00 & 1 & 1.02 & N/A & 3.87 & 3.87 & N/A \\
+GA & PP & 150 & 1.00 & 1 & 1.02 & N/A & 4.24 & 4.24 & N/A \\
+\midrule
+PSO & SPT & 20 & 0.94 & 728 & 1.00 & 910 & 3.05 & 3.29 & N/A \\
+PSO & SPT & 50 & 0.99 & 523 & 1.00 & 687 & 4.62 & 3.87 & N/A \\
+PSO & SPT & 150 & 1.00 & 375 & 1.00 & N/A & 5.81 & 4.22 & N/A \\
+PSO & SW & 20 & 1.00 & 702 & 1.00 & 720 & 3.73 & 3.47 & 1 \\
+PSO & SW & 50 & 1.00 & 613 & 1.00 & 210 & 4.97 & 4.08 & 2 \\
+PSO & SW & 150 & 1.00 & 514 & 1.00 & 184 & 5.80 & 4.66 & 1 \\
+PSO & PP & 20 & 0.99 & 110 & 1.03 & 30 & 3.12 & 1.79 & N/A \\
+PSO & PP & 50 & 1.00 & 94 & 1.03 & 15 & 3.68 & 2.01 & N/A \\
+PSO & PP & 150 & 1.00 & 89 & 1.02 & 20 & 4.08 & 2.18 & N/A \\
+\midrule
+ACO & SPT & 20 & 1.00 & 351 & 1.00 & N/A & 4.05 & 3.56 & N/A \\
+ACO & SPT & 50 & 1.00 & 298 & 1.00 & N/A & 5.17 & 4.24 & N/A \\
+ACO & SPT & 150 & 1.00 & 276 & 1.00 & N/A & 6.29 & 4.83 & N/A \\
+ACO & SW & 20 & 1.00 & 532 & 1.00 & 190 & 3.61 & 3.74 & 1 \\
+ACO & SW & 50 & 1.00 & 491 & 1.00 & 160 & 4.76 & 4.58 & 1 \\
+ACO & SW & 150 & 1.00 & 464 & 1.00 & N/A & 5.72 & 5.28 & 1 \\
+ACO & PP & 20 & 1.00 & 79 & 1.01 & N/A & 3.38 & 2.15 & N/A \\
+ACO & PP & 50 & 1.00 & 78 & 1.00 & N/A & 4.00 & 2.43 & N/A \\
+ACO & PP & 150 & 1.00 & 78 & 1.00 & N/A & 4.48 & 2.62 & N/A \\
+\bottomrule
+\end{tabular}
+\caption{Summary metrics per experimental cell (3 algorithms × 3 maze types × 3 population sizes). Algo=algorithm, Maze=maze type (SPT=shortest path, SW=sudden wall, PP=parallel paths), Pop=population, SR=success rate, Iters=mean iterations, Opt=mean path optimality, $t_{50\%}$=time to 50\% entropy loss, Floor=diversity floor, $\bar{H}$=mean entropy, Adapt=adaptation time (Sudden Wall only).}
+\label{tab:summary}
+\end{table}
+
+The Success Rate (SR) ranges from 0.00 to 1.00. The Optimality (Opt) value is $\geq 1.00$, where 1.00 represents the absolute shortest path. N/A in this table indicates a metric was not applicable, such as no Adaptation Time for static mazes or no Optimality score if the SR is 0.00.
+
+As Table \ref{tab:summary} shows, GA completely fails on the Shortest Path Trap (SPT) and Sudden Wall (SW) environments with a success rate of 0.00. Looking at the $\bar{H}$ values, GA exhibits a very low mean entropy. This indicates a severe lack of spatial diversity, suggesting the population becomes permanently stuck in a local optimum. This degree of failure from the GA architecture was unexpected.
+
+For the tightly coupled and environmentally coupled architectures (PSO and ACO), spatial diversity increases alongside population size. A larger population yields a higher diversity floor and mean entropy, leading to broader exploration of the search space. Consequently, they avoid becoming trapped and find the optimal path in fewer iterations. In the Sudden Wall maze, both architectures maintain a success rate of 1.00 and adapt remarkably fast, requiring only 1 to 2 iterations to recover. This rapid adaptation is likely driven by their high diversity floors, as the algorithms have already explored alternative routes before the disruption occurs.
+
+Although both PSO and ACO consistently achieve success rates of 1.00, ACO requires fewer iterations overall. We initially hypothesized that ACO would require longer adaptation times due to the persistence of outdated pheromone trails. However, the environmental memory proved flexible enough to allow nearly instant adaptation. Furthermore, our expectation that larger population sizes would amplify PSO's vulnerabilities to deceptive traps was incorrect. The results indicate that increased scale actually improves PSO's performance by reducing the total iterations required to find the goal.
+
+\section{Discussion}
+
+\subsection{Interpretation of Results}
+% AI placeholder:
+% Our initial findings highlight a stark contrast between decoupled and coupled architectures in grid-based maze navigation. The complete failure of GA across the Shortest Path Trap and Sudden Wall environments, characterized by its low mean entropy, indicates a severe inability to escape local optima or adapt to environmental shocks. In contrast, the highly coupled architectures (PSO and ACO) successfully navigated these challenges.
+
+% Furthermore, contrary to our initial hypothesis (H3), increasing the population size for PSO did not amplify its vulnerability to traps. Instead, scaling the population increased the diversity floor, allowing the swarm to maintain enough spatial spread to find the optimal path in fewer iterations. ACO also demonstrated exceptional environmental memory, adapting to the Sudden Wall disruption in only 1 to 2 iterations, defying our expectation that outdated pheromone trails would cause significant delays.
+
+\subsection{Limitations}
+We fixed algorithm-specific parameters using values from the literature and did not perform parameter tuning. Our core theoretical objective was to observe the baseline behaviors of decoupled, tightly coupled, and environmentally coupled architectures. Extensive tuning per maze would obscure these inherent architectural differences by over-fitting the algorithms to specific problems. Our findings about coupling architectures are therefore conditional on these parameter choices.
+
+This is particularly relevant for ACO's evaporation rate $\rho$, which directly controls the persistence of pheromone trails. Our choice of $\rho = 0.1$ produces long pheromone memory, which amplifies the adaptation effects predicted by our hypotheses. Higher $\rho$ values would likely weaken these effects. We acknowledge this dependency openly rather than claiming a robustness we have not tested.
+
+Additionally, parameters adapted from Shrestha et al. \cite{10.5120/ijca2024923402} serve as a reasonable starting point, but they cannot be assumed optimal for our setup. Shrestha et al. use a waypoint-based path representation, whereas our grid-based formulation with cell-by-cell navigation and wall collisions differs significantly in its dynamics. Furthermore, neither of the mentioned related works evaluate dynamic environments. Our Sudden Wall findings therefore extend the comparative literature into territory where these baseline parameter choices have not yet been heavily validated.
+
+\section{Conclusion}
+Abc
+
+\section{Author Contribution}
+Manon: Implemented base mazes, implemented base GA algorithm, contributed to the project proposal and renewed project proposal, incorporated feedback on renewed proposal, made and presented flash talk.
+
+Nemo:
+
+Robert:
+
+\section{Supplements}
+Link to GitHub Code
+
+\bibliographystyle{plain}
+\bibliography{bibliography-project}
+
+\end{document}
