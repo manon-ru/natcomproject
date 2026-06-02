@@ -1,32 +1,10 @@
 """
 Particle Swarm Optimization for grid-based maze navigation.
 
-Canonical continuous PSO with grid discretization per Shi & Eberhart (1998,
-ICEC Proceedings), "A modified particle swarm optimizer".
-
-Each particle holds:
-    position  ∈ ℝ²  — continuous coordinate in the maze plane
-    velocity  ∈ ℝ²  — continuous step vector
-
-VELOCITY UPDATE (Shi & Eberhart 1998 Eq. 1, inertia-weight form):
-    v(t+1) = ω·v(t) + c₁·r₁·(pbest − x) + c₂·r₂·(gbest − x)
-
-POSITION UPDATE:
-    x(t+1) = x(t) + v(t+1)
-
-DISCRETIZATION (project-specific): cell = (round(x), round(y))
-The maze fitness uses Manhattan distance from the discretized cell to maze.goal,
-and the path / visited trail is built from the sequence of cells the particle
-walks through.
-
-ABSORPTIVE BOUNDARY: if the proposed cell is out of bounds, lies behind a wall,
-or skips more than one cell in one step (illegal in a grid), the particle is
-absorbed — its velocity is zeroed and its continuous position is restored to the
-last valid coordinate. Single-cell moves into adjacent open cells are accepted
-and update the discrete path / visited set.
-
-ITERATION SEMANTICS: 1 PSO iteration = 1 swarm-wide velocity+position update,
-matching the GA generation and ACO iteration units used elsewhere in the runner.
+Particles move in continuous 2D space with the standard inertia-weight velocity
+update, and are mapped to grid cells with (round(x), round(y)). Invalid moves
+(out of bounds, through a wall, or longer than one cell) are rejected and the
+particle falls back to a valid neighbour. One swarm-wide update is one iteration.
 """
 import numpy as np
 
@@ -43,8 +21,8 @@ def _manhattan(c1: tuple, c2: tuple) -> int:
 
 class PSO:
     """
-    Inertia-weight PSO over continuous ℝ² positions, projected onto the maze
-    grid for path / entropy / collision purposes.
+    Inertia-weight PSO over continuous 2D positions, projected onto the maze
+    grid for path, entropy, and collision handling.
     """
 
     def __init__(
@@ -58,12 +36,12 @@ class PSO:
     ):
         self.maze = maze
         self.num_particles = num_particles
-        self.omega = omega  # inertia weight (Shi & Eberhart 1998 key contribution)
+        self.omega = omega  # inertia weight
         self.c1 = c1        # cognitive coefficient
         self.c2 = c2        # social coefficient
-        self.vmax = vmax    # per-component velocity clamp (keeps moves single-cell)
+        self.vmax = vmax    # per-component velocity clamp, keeps moves single-cell
 
-        # Swarm best — continuous position + Manhattan distance of its cell to goal.
+        # Swarm best: continuous position and Manhattan distance of its cell to goal.
         start_cell = self.maze.start
         self.global_best_position: np.ndarray = np.array(
             [float(start_cell[0]), float(start_cell[1])]
@@ -77,13 +55,11 @@ class PSO:
         self.global_history: list[tuple] = []     # collective trail with NAN_NODE breaks
         self.snapshot_history: list[tuple] = []   # trail captured at disruption time
 
-    # ------------------------------------------------------------------ #
     # Particle factory
-    # ------------------------------------------------------------------ #
     def initialize_particles(self) -> list[dict]:
         """
-        Each particle starts at maze.start with a small random velocity in
-        [-1, 1]² (per Shi & Eberhart 1998 §3 — random initial velocity).
+        Each particle starts at maze.start with a small random velocity drawn
+        from [-1, 1] per component.
         """
         start_cell = self.maze.start
         start_pos = np.array([float(start_cell[0]), float(start_cell[1])])
@@ -103,9 +79,7 @@ class PSO:
             )
         return particles
 
-    # ------------------------------------------------------------------ #
     # Grid projection + distance helper
-    # ------------------------------------------------------------------ #
     def distance_to_goal(self, path_or_pos) -> float:
         if isinstance(path_or_pos, np.ndarray):
             cell = self.discretize_position(path_or_pos.ravel()[:2])
@@ -126,16 +100,14 @@ class PSO:
         """
         return (round(float(pos[0])), round(float(pos[1])))
 
-    # ------------------------------------------------------------------ #
-    # Velocity update (Shi & Eberhart 1998, Eq. 1)
-    # ------------------------------------------------------------------ #
+    # Velocity update
     def update_velocity(self, particle: dict, global_best_position: np.ndarray) -> dict:
         """
-        v(t+1) = ω·v(t) + c₁·r₁·(pbest − x) + c₂·r₂·(gbest − x)
+        v(t+1) = w*v(t) + c1*r1*(pbest - x) + c2*r2*(gbest - x)
 
-        r1, r2 are drawn from a uniform [0, 1] distribution per dimension per
-        step via np.random.uniform — this keeps the algorithm controllable via
-        np.random.seed() and consistent with the rest of the numpy stack.
+        r1 and r2 are drawn from a uniform [0, 1] distribution per dimension per
+        step with np.random.uniform, which keeps runs reproducible under
+        np.random.seed() and consistent with the rest of the numpy code.
         """
         r1 = np.random.uniform(0.0, 1.0, size=2)
         r2 = np.random.uniform(0.0, 1.0, size=2)
@@ -154,27 +126,24 @@ class PSO:
         )
         return particle
 
-    # ------------------------------------------------------------------ #
     # Position update with velocity projection
-    # ------------------------------------------------------------------ #
     def _project_move(self, particle: dict, cell: tuple, global_best_position: np.ndarray = None) -> tuple:
         """
         Called when the canonical velocity move is invalid (walled off, out of
         bounds, or a multi-cell jump).
 
-        Unvisited open neighbours are scored by the discrete-PSO cost function
-        (Clerc 2004): cost = ω + c₁·r₁·d_pbest + c₂·r₂·d_gbest, where d_pbest
-        and d_gbest are the Manhattan distances from each candidate to the
-        personal-best and global-best cell respectively.  The random draws r₁, r₂
-        per call provide the stochastic exploration diversity that prevents
-        premature swarm convergence, while c₁/c₂ still encode the
-        cognitive/social coupling strengths from the canonical velocity formula.
-        The minimum-cost unvisited neighbour is chosen.
+        Unvisited open neighbours are scored by a discrete-PSO cost function:
+        cost = w + c1*r1*d_pbest + c2*r2*d_gbest, where d_pbest and
+        d_gbest are the Manhattan distances from each candidate to the personal
+        best and global best cell. The random draws r1, r2 per call keep
+        exploration diverse so the swarm does not converge too early, while c1
+        and c2 still encode the cognitive and social weights from the velocity
+        formula. The minimum-cost unvisited neighbour is chosen.
 
-        When every open neighbour has already been visited the particle DFS-
-        backtracks one step: the last cell is popped from path and the position
-        is snapped back to the parent cell.  The velocity is preserved so the
-        canonical update continues coherently on the next step.
+        When every open neighbour has already been visited the particle
+        backtracks one step: the last cell is popped from the path and the
+        position is snapped back to the parent cell. The velocity is preserved so
+        the next update continues coherently.
 
         After any move the continuous position is snapped to the chosen cell
         centre so pbest stores integer-aligned coordinates for clean
@@ -190,11 +159,10 @@ class PSO:
                      if nb not in particle["visited"]]
 
         if unvisited:
-            # Cost = ω + c₁·r₁·d_pbest + c₂·r₂·d_gbest (Clerc 2004 discrete PSO).
-            # r₁, r₂ are drawn independently per candidate (matching the original
-            # cost-based DFS formulation) so that equidistant neighbours get
-            # different random scalings and particles at the same cell choose
-            # different directions, maintaining swarm diversity.
+            # Cost = w + c1*r1*d_pbest + c2*r2*d_gbest.
+            # r1, r2 are drawn independently per candidate so that equidistant
+            # neighbours get different random scalings and particles at the same
+            # cell pick different directions, which keeps the swarm diverse.
             pb = particle["personal_best"]
             pb_cell = self.discretize_position(
                 np.asarray(pb, dtype=float).ravel()[:2]
@@ -297,9 +265,7 @@ class PSO:
             particle["path"].append(current_cell)
             particle["visited"].add(current_cell)
 
-    # ------------------------------------------------------------------ #
     # Combined per-particle step
-    # ------------------------------------------------------------------ #
     def update_particle(
         self,
         particle: dict,
@@ -334,9 +300,7 @@ class PSO:
             particle["personal_best"] = particle["position"].copy()
             particle["personal_best_distance"] = current_distance
 
-    # ------------------------------------------------------------------ #
     # Main loop
-    # ------------------------------------------------------------------ #
     def run(
         self,
         max_iterations: int = 1000,

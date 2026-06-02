@@ -1,8 +1,8 @@
 """
-ga_iteration_budget_sweep.py — Investigate whether GA can succeed given more iterations.
+Investigate whether the GA can succeed given more iterations.
 
-Tests proposal-spec GA (mutation_rate=0.3, chromosome_length=160, pop=50) on Shortest Path Trap 40×40
-across iteration budgets ranging from 610 (proposal) to 50,000.
+Tests the GA (mutation_rate=0.3, chromosome_length=160, pop=50) on Shortest Path Trap
+40x40 across iteration budgets ranging from 610 to 50,000.
 
 Hypothesis: if GA's failure is iteration-bound, larger budgets should yield non-zero
 success rates. If GA still fails at 50k generations, the encoding (not the budget)
@@ -47,9 +47,9 @@ def _run_one(task):
     ga = GeneticAlgorithm(
         maze,
         pop_size=50,
-        chromosome_length=160,   # proposal-spec
+        chromosome_length=160,
         crossover_rate=0.5,
-        mutation_rate=0.3,        # proposal-spec
+        mutation_rate=0.3,
     )
 
     t0 = time.time()

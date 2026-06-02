@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 try:
     from config import MAZE_TYPES, INSTANCE_SEEDS, MAZE_WIDTH, MAZE_HEIGHT
 except ImportError:
-    # Fallback if config.py not yet available
+    # Fall back to defaults if the config import fails
     MAZE_TYPES = ["Shortest Path Trap", "Sudden Wall", "Parallel Paths"]
     INSTANCE_SEEDS = list(range(1, 11))
     MAZE_WIDTH = 40

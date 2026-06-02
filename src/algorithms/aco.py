@@ -1,14 +1,10 @@
 """
 Ant Colony Optimization for grid-based maze navigation.
 
-NOTE ON PHEROMONE REPRESENTATION: This implementation stores pheromone
-values per CELL rather than per EDGE. Akka & Khaber (cited in the proposal
-for structural parameters) typically use a per-edge formulation. Our
-per-cell choice is a project-specific design that reduces memory and is
-consistent with the cell-by-cell agent movement model. This deviation is
-noted in the report's Approach section.
+We store pheromone per cell rather than per edge. The more common per-edge form
+uses more memory and the per-cell choice matches our cell-by-cell movement model.
 """
-import random  # noqa: F401 — kept for test_no_import_random compatibility
+import random  # noqa: F401
 import numpy as np
 from evaluation.metrics import calculate_shannon_entropy
 from maze.environment import MazeEnvironment
@@ -89,12 +85,12 @@ class ACO:
         wall_dropped = False
         disruption_iteration_recorded = None
         
-        # NEW: Store the first successful run so we can return it later
-        first_success_result = None 
+        # Held until the forced minimum is reached, then returned.
+        first_success_result = None
 
         for iteration in range(max_iterations):
             
-            # --- TEMPORAL DISRUPTION LOGIC ---
+            # Disruption: drop the dynamic wall at the set iteration
             if not wall_dropped and disruption_iteration > 0 and iteration == disruption_iteration:
                 if hasattr(self.maze, 'dynamic_wall') and self.maze.dynamic_wall:
                     wall_dropped = True
@@ -153,7 +149,6 @@ class ACO:
                         ant["path"] = [self.maze.start]
                         ant["visited"] = {self.maze.start}
                     else:
-                        # NEW: Record success but don't break immediately
                         if first_success_result is None:
                             first_success_result = {
                                 "success": True, 
@@ -164,7 +159,7 @@ class ACO:
                                 "disruption_iteration": disruption_iteration_recorded,
                             }
 
-            # Canonical AS deposit: Q/L on each cell of completed paths (Dorigo 1996)
+            #  Q/L on each cell of completed paths
             for ant in ants:
                 if ant["path"] and ant["path"][-1] == self.maze.goal:
                     path_length = len(ant["path"])
@@ -173,12 +168,12 @@ class ACO:
                         for cell in ant["path"]:
                             self.pheromones[cell[1], cell[0]] += deposit_per_cell
 
-            # NEW: Only return if we have a success AND we've passed the forced minimum
+            # Only return if we have a success AND we've passed the forced minimum
             if first_success_result is not None and iteration >= forced_min_iterations:
                 first_success_result["history"] = self.global_history
                 return first_success_result
 
-        # Fallback if loop ends
+        # Loop finished without an early return
         if first_success_result is not None:
             first_success_result["history"] = self.global_history
             return first_success_result

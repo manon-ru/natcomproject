@@ -22,8 +22,8 @@ class MazeEnvironment:
         self.horizontal_walls = np.ones((height + 1, width), dtype=bool)
         self.vertical_walls = np.ones((height, width + 1), dtype=bool)
         
-        # NEW: Store the dynamic wall coordinates
-        self.dynamic_wall = None 
+        # Wall added mid-run on disruption, set later if the maze uses one
+        self.dynamic_wall = None
 
     def remove_wall(self, c1: tuple, c2: tuple) -> None:
         """Remove the wall between two adjacent cells."""

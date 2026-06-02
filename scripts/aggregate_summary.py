@@ -1,10 +1,9 @@
 """
-aggregate_summary.py - Build results/aggregate_summary.txt from a runs.csv.
+Build results/aggregate_summary.txt from a runs.csv.
 
 Reads the experiment CSV, groups by (algo, maze_type, pop_size), and writes a
-fixed-width table with success rates. Output format matches the existing
-results/aggregate_summary.txt so downstream consumers (report tables) remain
-stable across re-runs.
+fixed-width table with success rates. The output format is kept stable across
+re-runs so the summary stays easy to diff.
 
 Usage:
     uv run python scripts/aggregate_summary.py \

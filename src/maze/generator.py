@@ -1,50 +1,18 @@
 """
-Maze generators for Group 27 NatComp project.
+Maze generators. Every maze starts at the top-left (0, 0) and ends at the
+bottom-right (W-1, H-1). There are three types:
 
-Convention shared by all maze types:
-  - Start: top-left corner (0, 0)
-  - Goal:  bottom-right corner (W-1, H-1)
+Shortest Path Trap: a monotonic corridor leads almost to the goal but ends one
+walled cell short, so an agent following the heuristic has to backtrack the whole
+trap before it can reach the real path.
 
-Maze types:
+Sudden Wall: a normal maze with one extra shortcut opening, stored as
+maze.dynamic_wall. The shortcut is open at first; the runner walls it off at
+iteration 100, forcing the population onto the longer original path.
 
-  Shortest Path Trap
-                  Deception.        A random monotonic R/D corridor from S to
-                                    T_end = (W-1, H-2). T_end is one cell
-                                    above G but the edge to G is permanently
-                                    walled, so the heuristic-monotonic trap
-                                    ends one cell short of the goal. The grid
-                                    off the trap is DFS-carved as one or two
-                                    connected components, and the only edge
-                                    from S into the G-containing component is
-                                    the gateway (0,0)-(0,1); an agent stuck
-                                    at T_end therefore has to backtrack the
-                                    entire trap against the heuristic gradient
-                                    before it can enter the real path. A
-                                    second DFS-carved dead wedge off the trap
-                                    is reachable through one mid-trap gateway
-                                    and cannot reach G, so it adds wasted
-                                    search without shortcutting the trap.
-
-  Sudden Wall     Non-stationarity. Perfect DFS maze plus one extra opening
-                                    that creates a shortcut. The shortcut
-                                    wall is stored as maze.dynamic_wall.
-                                    Initially the shortcut is open (short
-                                    path is optimal). At iteration T = 100
-                                    the runner adds the wall back, forcing
-                                    the population onto the original (long)
-                                    path.
-
-  Parallel Paths  Multimodality.    Two monotonic staircase routes from S
-                                    to G that zigzag through the interior:
-                                      Path A stays strictly above y = x.
-                                      Path B stays strictly below y = x,
-                                              with one small +6-cell detour
-                                              placed near the goal.
-                                    They share only S and G. Path A has
-                                    length W+H-1; path B has length W+H+5
-                                    (with the default depth-3 detour). DFS
-                                    dead-end branches decorate the interior
-                                    so no third S->G route exists.
+Parallel Paths: two staircase routes from start to goal that share only those two
+cells. Path B is a few cells longer because of a small detour near the goal, and
+dead-end branches fill the interior so no third route exists.
 """
 import random
 from collections import deque
@@ -293,8 +261,7 @@ def _try_insert_detour_on_b(path_a, path_b, N,
     A depth-d detour replaces a single unit step of B with a rectangular excursion
     of 2*d+1 steps, adding exactly 2*d cells to path B. With the default depth=2
     the detour visits 4 extra cells. Candidates are restricted to the last
-    `near_end_steps` interior positions of path B so the detour sits near the goal,
-    where the proposal's "small detour near the end of one route" places it.
+    `near_end_steps` interior positions of path B so the detour sits near the goal.
     A candidate is feasible iff every detour cell is inside the grid, not on path
     A, and not on path B. If no near-end candidate fits at depth d, we try depth
     d-1 in the same near-end window. If that also fails, path B is returned

@@ -1,26 +1,10 @@
 """
 Genetic Algorithm for grid-based maze navigation.
 
-Chromosome encoding: VARIABLE-LENGTH SEQUENCE OF CELLS visited from start.
-Following Lamini et al. (2018, Procedia Computer Science) and Tu & Yang (2003, IEEE ICRA),
-each chromosome is a list of (x, y) tuples representing the cells traversed from
-maze.start, with maze.goal appearing in the path indicating success.
-
-This differs from Shrestha et al.'s 36-bit waypoint encoding, which suits continuous
-2D environments with random waypoints scattered through free space. Our grid-based
-formulation with cell-by-cell maze navigation has no continuous space between cells —
-the path is the chromosome's natural representation.
-
-OPERATORS (proposal Section 4.1, adapted to path encoding):
-- Roulette wheel selection over shifted fitness = -manhattan_to_goal (or -path_length if goal reached)
-- Two-point crossover at common cells (splice at two cells appearing in both parents)
-- Per-chromosome mutation at rate 0.3 = truncate at random cell and regrow via random walk
-  (For variable-length path representations, per-element flip-bit mutation has no
-  well-defined analogue because changing one cell breaks neighbor adjacency. We adopt
-  the standard adaptation: a per-chromosome mutation probability with a truncate-regrow
-  operation, as in Lamini et al.)
-
-ITERATION SEMANTICS: 1 GA generation = 1 PSO/ACO iteration (algorithm-native unit).
+A chromosome is a variable-length list of (x, y) cells from the start; the path
+reaches the goal once maze.goal appears in it. Selection is roulette, crossover
+splices two parents at a shared cell, and mutation regrows a truncated path with
+a random walk. One generation is one iteration.
 """
 import random
 from evaluation.metrics import calculate_shannon_entropy
@@ -34,21 +18,19 @@ class GeneticAlgorithm:
         self,
         maze: MazeEnvironment,
         pop_size: int = 50,
-        chromosome_length: int = None,   # max path length (kept for API compat with runner.py)
+        chromosome_length: int = None,   # max path length
         crossover_rate: float = 0.5,
         mutation_rate: float = 0.3,
     ):
         self.maze = maze
         self.pop_size = pop_size
         self.max_path_length = chromosome_length if chromosome_length is not None else 2 * (maze.width + maze.height)
-        self.chromosome_length = self.max_path_length   # alias for runner.py compatibility
+        self.chromosome_length = self.max_path_length   # alias used by the runner
         self.crossover_rate = crossover_rate
         self.mutation_rate = mutation_rate
         self.entropy_history: list[float] = []
         self.global_history: list[tuple] = []
         self.snapshot_history: list[tuple] = []
-
-    # ── Path construction ────────────────────────────────────────────────────
 
     def _random_walk(self, start_path: list[tuple]) -> list[tuple]:
         """Extend a path by random unvisited-neighbor walk until stuck, goal, or max length."""
@@ -77,8 +59,6 @@ class GeneticAlgorithm:
             return path[:idx + 1]
         return path
 
-    # ── Fitness & entropy ────────────────────────────────────────────────────
-
     def _reached_goal(self, ind: dict) -> bool:
         return self.maze.goal in ind["path"]
 
@@ -93,10 +73,8 @@ class GeneticAlgorithm:
         return -(abs(end[0] - gx) + abs(end[1] - gy))
 
     def _entropy_position(self, ind: dict) -> tuple:
-        """Goal if reached, else end position (per Metis Q2(b) policy)."""
+        """Goal if reached, otherwise the path's end position."""
         return self.maze.goal if self._reached_goal(ind) else ind["path"][-1]
-
-    # ── Operators ────────────────────────────────────────────────────────────
 
     def _roulette_select(self, population: list[dict]) -> dict:
         fitnesses = [self._fitness(ind) for ind in population]
@@ -122,7 +100,7 @@ class GeneticAlgorithm:
         # Common cells appearing in both parents (excluding the shared start cell)
         common = [c for c in path_a if c in set_b and c != self.maze.start]
         if not common:
-            # Adjacency-aware splice: find (A_i, B_j) where B_j ∈ maze.neighbors(*A_i) and B_j ∈ path_b
+            # No shared cell: splice where a cell in path_a is adjacent to a cell in path_b
             candidates = []
             for idx_a in range(1, len(path_a)):
                 a_cell = path_a[idx_a]
@@ -156,13 +134,10 @@ class GeneticAlgorithm:
             idx_b = path_b.index(c)
             child_path = path_a[:idx_a] + path_b[idx_b:]
 
-        # Clean revisits: if a cell appears twice, truncate at its first occurrence.
-        # Design choice (intentional, not a bug): when the splice creates a loop — a cell
-        # appearing in both the path_b segment and the path_a tail — we drop the loop body
-        # by truncating at the first occurrence. Adjacency is preserved because the cell
-        # immediately after the loop was originally adjacent to the loop's entry cell in the
-        # parent path. Loops are strictly wasteful in pathfinding (extra cells, no progress),
-        # so removing them is a free path-length reduction. See Lamini et al. (2018).
+        # If a splice creates a loop (a cell appearing twice), drop the loop body by
+        # truncating at the cell's first occurrence. Adjacency still holds because the
+        # cell after the loop was adjacent to its entry cell in the parent path, and a
+        # loop only adds cells without making progress, so removing it shortens the path.
         seen = set()
         clean = []
         for cell in child_path:
@@ -197,8 +172,6 @@ class GeneticAlgorithm:
             new_path = candidate
         return {"path": new_path}
 
-    # ── Run loop ─────────────────────────────────────────────────────────────
-
     def run(
         self,
         max_iterations: int = 1000,
@@ -216,7 +189,7 @@ class GeneticAlgorithm:
         first_success_result = None
 
         for iteration in range(max_iterations):
-            # ── Disruption ───────────────────────────────────────────────────
+            # Disruption
             if not wall_dropped and disruption_iteration > 0 and iteration == disruption_iteration:
                 if hasattr(self.maze, "dynamic_wall") and self.maze.dynamic_wall:
                     wall_dropped = True
@@ -234,12 +207,12 @@ class GeneticAlgorithm:
                                 ind["path"] = p[:i + 1]
                                 break
 
-            # ── Entropy sample ───────────────────────────────────────────────
+            # Entropy sample
             if iteration % 10 == 0:
                 positions = [self._entropy_position(ind) for ind in population]
                 self.entropy_history.append(calculate_shannon_entropy(positions))
 
-            # ── Next generation (top-1 elitism) ─────────────────────────────
+            # Next generation, with top-1 elitism
             elite = max(population, key=self._fitness)
             new_population = [{"path": elite["path"][:]}]
             for _ in range(self.pop_size - 1):
@@ -250,7 +223,7 @@ class GeneticAlgorithm:
                 new_population.append(child)
             population = new_population
 
-            # ── Visualization trail: best individual's path ──────────────────
+            # Visualization trail: best individual's path
             best = max(population, key=self._fitness)
             if best["path"] and len(best["path"]) > 1:
                 for j in range(len(best["path"]) - 1):
@@ -258,7 +231,7 @@ class GeneticAlgorithm:
                     self.global_history.append(best["path"][j + 1])
                     self.global_history.append(NAN_NODE)
 
-            # ── Success check ────────────────────────────────────────────────
+            # Success check
             for ind in population:
                 if self._reached_goal(ind):
                     if disruption_iteration > 0 and iteration < disruption_iteration:

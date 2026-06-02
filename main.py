@@ -1,5 +1,5 @@
 """
-main.py — Experimental driver for Group 27 NatComp project.
+Experimental driver for the project.
 
 Runs the full 3 × 3 × 3 factorial (algorithm × maze type × population size)
 with 10 instances × 10 trials per cell = 2,700 total runs.

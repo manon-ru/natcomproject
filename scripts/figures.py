@@ -1,5 +1,5 @@
 """
-figures.py — Generate report-ready figures from experiment results CSV.
+Generate figures from the experiment results CSV.
 
 Usage:
     uv run python scripts/figures.py --input results/runs.csv --output figures/

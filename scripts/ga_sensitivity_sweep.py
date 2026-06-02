@@ -1,9 +1,10 @@
 """
-ga_sensitivity_sweep.py — Sub-experiment investigating the GA encoding/parameter coupling.
+Sub-experiment on the GA encoding and parameter coupling.
 
-The proposal-spec mutation_rate=0.3 was calibrated for Shrestha's 36-bit waypoint encoding.
-Applied to our 160-gene direction encoding, expected mutations = 48 per offspring (destructive).
-This script sweeps mutation_rate × chromosome_length to surface the relationship.
+A mutation_rate of 0.3 was calibrated for a 36-bit waypoint encoding.
+Applied to our 160-gene direction encoding it gives about 48 mutations per offspring,
+which is destructive. This script sweeps mutation_rate x chromosome_length to show the
+relationship.
 
 Usage:
     uv run python scripts/ga_sensitivity_sweep.py
@@ -185,7 +186,7 @@ def main():
                     color="white" if heat[i, j] < 0.5 else "black", fontweight="bold")
 
     plt.colorbar(im, ax=ax, label="Success rate")
-    # Annotate the proposal-spec cell
+    # Annotate the baseline cell
     ax.add_patch(plt.Rectangle((len(chromosome_lengths) - 1.5, len(mutation_rates) - 1.5), 1, 1,
                                fill=False, edgecolor="blue", lw=3))
     fig.tight_layout()

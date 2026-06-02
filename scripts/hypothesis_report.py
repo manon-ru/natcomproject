@@ -1,9 +1,7 @@
 """
-hypothesis_report.py - Evaluate proposal hypotheses H1/H2/H3 against a runs.csv.
+Evaluate hypotheses H1/H2/H3 against a runs.csv.
 
-Produces a structured text report that maps each subordinate proposal
-prediction to its observed direction in the data. Predictions are stated in
-proposal.txt sections "Hypotheses" (H1, H2, H3); the mapping to columns is:
+Maps each prediction to its observed direction in the data. The metrics used are:
 
     Time to 50% entropy loss   -> time_to_half_entropy   (lower = faster collapse)
     Diversity floor            -> diversity_floor        (lower = more severe collapse)
@@ -12,10 +10,10 @@ proposal.txt sections "Hypotheses" (H1, H2, H3); the mapping to columns is:
     Success rate               -> success_overall
     Path optimality            -> path_optimality        (1.0 = matches A* optimum)
 
-For each prediction we print: predicted ordering, observed ordering, and a
-single-line verdict (supported / partial / contradicted). Numerical aggregation
-uses per-cell means with NaN-skipping. We do not run hypothesis tests; the
-report is descriptive, intended as input to the manual write-up.
+For each prediction we print the predicted ordering, the observed ordering, and a
+single-line verdict (supported / partial / contradicted). Aggregation uses
+per-cell means with NaN-skipping. This output is descriptive, not a significance
+test.
 
 Usage:
     uv run python scripts/hypothesis_report.py --input results/runs.csv \

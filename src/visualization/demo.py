@@ -1,6 +1,6 @@
-# Scratch tool — do NOT use for paper figures. The proposal figures are produced by scripts/figures.py.
+# Scratch tool, not for paper figures. The paper figures come from scripts/figures.py.
 """
-demo.py — Visual preview of the project's maze environments and analytics.
+Visual preview of the project's maze environments and analytics.
 
 Shows all three maze tiers with their BFS-optimal paths, plus placeholder
 charts illustrating what the final analytics will look like once the
