@@ -168,9 +168,6 @@ Pathfinding in 2D Mazes}
     \section{Results}
     All numbers below are from the full confirmatory run of 2{,}700 trials (100 per cell). We first explain how to read the summary table, then work through the three subquestions in turn, and finally isolate the one result that most needs ruling out as a bug: GA's complete failure on the deceptive trap.
 
-% \subsection{How to read the results} \label{howtoread}
-% Table~\ref{tab:summary} has one row per experimental cell (algorithm $\times$ maze $\times$ population). \textbf{Success rate (SR)} ranges from $0.00$ to $1.00$ and is the first thing to check: an algorithm struggles with finding the goal in the mazes when SR is at or near $0.00$ across all three population sizes for that maze (e.g.\ the GA rows for SPT and SW). \textbf{Optimality (Opt)} is $\geq 1.00$, where $1.00$ is the A* shortest path and higher is worse; it is \texttt{N/A} when SR is $0.00$ because there are no successful runs to measure. \textbf{$t_{50\%}$}, \textbf{Floor}, and \textbf{$\bar H$} are entropy quantities in bits: Floor and $\bar H$ are bounded below by $0$ (all agents on one cell) and above by $\log$ of the number of reachable cells; higher means more spatial diversity. \textbf{Adapt} (iterations to re-reach 80\% entropy) applies only to the Sudden Wall maze and is \texttt{N/A} elsewhere. In short: scan SR to see \emph{whether} an algorithm solves a maze, then read Iters/Opt for \emph{how efficiently}, and the entropy columns for \emph{how the population behaved} while doing so.
-
     \subsection{How to read the results} \label{howtoread}
     Table \ref{tab:summary} presents the performance and behavioral data for each experimental cell (algorithm $\times$ maze type $\times$ population size). To interpret the results systematically, the metrics should be understood as follows:
 
