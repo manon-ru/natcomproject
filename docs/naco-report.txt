@@ -83,29 +83,30 @@ Because our objective is to compare \emph{inherent} information architectures ra
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{lll}
+\begin{tabular}{lllp{6.6cm}}
 \toprule
-\textbf{Algorithm} & \textbf{Parameter} & \textbf{Value} \\
+\textbf{Algorithm} & \textbf{Parameter} & \textbf{Value} & \textbf{Source / rationale} \\
 \midrule
 \textbf{GA}
- & Selection & Roulette wheel \\
- & Crossover & Two-point at common cells (rate 0.5) \\
- & Mutation & Truncate-and-regrow (rate 0.3) \\
+ & Encoding & Cell sequence (var.\ length) & Path is the natural representation; preserves validity \cite{benhlima2018,tu2003} \\
+ & Selection & Roulette wheel & Follows Shrestha et al. \cite{shrestha2024} \\
+ & Crossover & Two-point at common cells (0.5) & Shared-cell splice keeps paths connected \\
+ & Mutation & Truncate-and-regrow (0.3) & Rate from \cite{shrestha2024}; operator adapted to keep paths valid \\
 \midrule
 \textbf{PSO}
- & Inertia ($\omega$) & 1.0 \\
- & Cognitive coefficient ($c_1$) & 0.1 \\
- & Social coefficient ($c_2$) & 0.2 \\
+ & Inertia $\omega$ & 1.0 & Directly from Shrestha et al. \cite{shrestha2024} \\
+ & Cognitive $c_1$ & 0.1 & As above \\
+ & Social $c_2$ & 0.2 & As above ($r_1,r_2\sim U(0,1)$ are runtime draws, not parameters) \\
 \midrule
 \textbf{ACO}
- & Pheromone exponent ($\alpha$) & 1 \\
- & Heuristic exponent ($\beta$) & 5 \\
- & Pheromone deposit ($Q$) & 2 \\
- & Evaporation rate ($\rho$) & 0.1 \\
- & Initial pheromone & 0.8 \\
+ & Pheromone exp.\ $\alpha$ & 1 & Grid-based ACO of Akka and Khaber \cite{akka2018} \\
+ & Heuristic exp.\ $\beta$ & 5 & As above \\
+ & Deposit $Q$ & 2 & As above \\
+ & Evaporation $\rho$ & 0.1 & From Shrestha et al. \cite{shrestha2024}; long pheromone memory \\
+ & Initial pheromone & 0.8 & As above \\
 \bottomrule
 \end{tabular}
-\caption{Summary of specific parameters used for each algorithm.}
+\caption{Fixed algorithm parameters and the source or rationale for each. Population size is not listed here because it is a deliberate experimental factor (Section~\ref{design}), tested at 20, 50, and 150 for all three algorithms.}
 \label{tab:parameters}
 \end{table}
 
