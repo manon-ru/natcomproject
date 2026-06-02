@@ -1,23 +1,30 @@
 \documentclass[11pt,a4paper]{article}
+
+\usepackage{url}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{booktabs}
-\usepackage[table]{xcolor}
+\usepackage[table,dvipsnames]{xcolor}
 \geometry{margin=2.5cm}
 \usepackage{parskip}
-\usepackage{xcolor, soul}
-\usepackage[dvipsnames]{xcolor}
-\usepackage[table]{xcolor}
-
-\sethlcolor{Apricot}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage{hyperref}
 
 \title{Project Report Group 27: Comparing GA, PSO, and ACO for\\
 Pathfinding in 2D Mazes}
 \author{\large Manon Leijser \and Nemo Ingendaa \and Robert Blaauwendraad}
 \date{\today}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=cyan,
+    citecolor=cyan,
+    urlcolor=black
+}
 
 \begin{document}
 
