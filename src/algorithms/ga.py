@@ -239,9 +239,10 @@ class GeneticAlgorithm:
                 positions = [self._entropy_position(ind) for ind in population]
                 self.entropy_history.append(calculate_shannon_entropy(positions))
 
-            # ── Next generation ──────────────────────────────────────────────
-            new_population = []
-            for _ in range(self.pop_size):
+            # ── Next generation (top-1 elitism) ─────────────────────────────
+            elite = max(population, key=self._fitness)
+            new_population = [{"path": elite["path"][:]}]
+            for _ in range(self.pop_size - 1):
                 a = self._roulette_select(population)
                 b = self._roulette_select(population)
                 child = self._crossover(a, b)

@@ -25,9 +25,10 @@ GA_PARAMS = {
 GA_CHROMOSOME_LENGTH_FN = lambda w, h: 2 * (w + h)
 
 PSO_PARAMS = {
-    "omega": 1.0,   # inertia weight; r1, r2 remain U(0,1) draws per step
-    "c1": 0.1,
-    "c2": 0.2,
+    "omega": 1.0,   # inertia weight (proposal Section 4.1)
+    "c1": 0.1,      # cognitive coefficient (proposal Section 4.1)
+    "c2": 0.2,      # social coefficient (proposal Section 4.1)
+    "vmax": 1.0,    # velocity clamp per component; 1.0 keeps moves single-cell
 }
 
 ACO_PARAMS = {

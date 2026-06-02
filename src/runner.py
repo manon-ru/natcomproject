@@ -47,12 +47,14 @@ def _seed_worker(trial_seed: int) -> None:
     np.random.seed(trial_seed)
 
 
-def _build_algorithm(algo_name: str, maze, pop_size: int):
+def _build_algorithm(algo_name: str, maze, pop_size: int, chromosome_length: int = None):
     if algo_name == "GA":
+        chrom_len = chromosome_length if chromosome_length is not None \
+            else GA_CHROMOSOME_LENGTH_FN(maze.width, maze.height)
         return GeneticAlgorithm(
             maze,
             pop_size=pop_size,
-            chromosome_length=GA_CHROMOSOME_LENGTH_FN(maze.width, maze.height),
+            chromosome_length=chrom_len,
             crossover_rate=GA_PARAMS["crossover_rate"],
             mutation_rate=GA_PARAMS["mutation_rate"],
         )
@@ -63,6 +65,7 @@ def _build_algorithm(algo_name: str, maze, pop_size: int):
             omega=PSO_PARAMS["omega"],
             c1=PSO_PARAMS["c1"],
             c2=PSO_PARAMS["c2"],
+            vmax=PSO_PARAMS["vmax"],
         )
     elif algo_name == "ACO":
         return ACO(
@@ -125,8 +128,16 @@ def run_single_trial(task: tuple) -> dict:
     # CRITICAL: Re-seed AFTER generate_maze so algorithm randomness is controlled by trial_seed
     _seed_worker(trial_seed)
 
+    # GA chromosome must fit the actual optimal path; the config default (2*(W+H)=160) is too
+    # short for Shortest Path Trap (~230 steps) and Sudden Wall post-disruption (~300 steps).
+    ga_chrom_len = max(
+        GA_CHROMOSOME_LENGTH_FN(maze.width, maze.height),
+        2 * true_optimal_steps,
+    )
+
     # Build and run algorithm
-    algo = _build_algorithm(algo_name, maze, pop_size)
+    algo = _build_algorithm(algo_name, maze, pop_size,
+                            chromosome_length=ga_chrom_len if algo_name == "GA" else None)
     result = algo.run(
         max_iterations=max_iterations,
         disruption_iteration=disruption_iteration,

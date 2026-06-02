@@ -78,4 +78,4 @@ def test_reproducibility_same_seed_same_output(monkeypatch):
     pso2 = PSO(maze, num_particles=10, c1=2.0, c2=2.0)
     result2 = pso2.run(max_iterations=50)
 
-    assert result1["path"] != result2["path"]
+    assert result1["path"] == result2["path"]

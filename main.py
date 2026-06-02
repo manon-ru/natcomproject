@@ -69,7 +69,8 @@ def main() -> None:
 
     tasks = build_tasks(quick=quick, pilot=pilot)
     total = len(tasks)
-    num_workers = min(os.cpu_count() or 4, 8)
+    requested = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--workers=")), None)
+    num_workers = requested if requested else (os.cpu_count() or 4)
 
     print(f"Mode: {'quick' if quick else 'pilot' if pilot else 'full'}")
     print(f"Total tasks: {total}")

@@ -51,15 +51,17 @@ class PSO:
         self,
         maze: MazeEnvironment,
         num_particles: int = 50,
-        omega: float = 1.0,
-        c1: float = 0.1,
-        c2: float = 0.2,
+        omega: float = 0.7,
+        c1: float = 1.5,
+        c2: float = 1.5,
+        vmax: float = 1.0,
     ):
         self.maze = maze
         self.num_particles = num_particles
         self.omega = omega  # inertia weight (Shi & Eberhart 1998 key contribution)
         self.c1 = c1        # cognitive coefficient
         self.c2 = c2        # social coefficient
+        self.vmax = vmax    # per-component velocity clamp (keeps moves single-cell)
 
         # Swarm best — continuous position + Manhattan distance of its cell to goal.
         start_cell = self.maze.start
@@ -143,17 +145,102 @@ class PSO:
         gb = global_best_position
         if not (isinstance(gb, np.ndarray) and gb.ndim == 1 and gb.shape[0] == 2):
             gb = np.asarray(gb, dtype=float).ravel()[:2]
-        particle["velocity"] = (
+        particle["velocity"] = np.clip(
             self.omega * particle["velocity"]
             + self.c1 * r1 * (pb - particle["position"])
-            + self.c2 * r2 * (gb - particle["position"])
+            + self.c2 * r2 * (gb - particle["position"]),
+            -self.vmax,
+            self.vmax,
         )
         return particle
 
     # ------------------------------------------------------------------ #
-    # Position update with absorptive boundary
+    # Position update with velocity projection
     # ------------------------------------------------------------------ #
-    def update_position(self, particle: dict) -> None:
+    def _project_move(self, particle: dict, cell: tuple, global_best_position: np.ndarray = None) -> tuple:
+        """
+        Called when the canonical velocity move is invalid (walled off, out of
+        bounds, or a multi-cell jump).
+
+        Unvisited open neighbours are scored by the discrete-PSO cost function
+        (Clerc 2004): cost = ω + c₁·r₁·d_pbest + c₂·r₂·d_gbest, where d_pbest
+        and d_gbest are the Manhattan distances from each candidate to the
+        personal-best and global-best cell respectively.  The random draws r₁, r₂
+        per call provide the stochastic exploration diversity that prevents
+        premature swarm convergence, while c₁/c₂ still encode the
+        cognitive/social coupling strengths from the canonical velocity formula.
+        The minimum-cost unvisited neighbour is chosen.
+
+        When every open neighbour has already been visited the particle DFS-
+        backtracks one step: the last cell is popped from path and the position
+        is snapped back to the parent cell.  The velocity is preserved so the
+        canonical update continues coherently on the next step.
+
+        After any move the continuous position is snapped to the chosen cell
+        centre so pbest stores integer-aligned coordinates for clean
+        cognitive/social terms on the following update.
+        """
+        neighbours: list[tuple] = []
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nb = (cell[0] + dx, cell[1] + dy)
+            if self.maze.in_bounds(*nb) and not self.maze.has_wall_between(cell, nb):
+                neighbours.append((dx, dy, nb))
+
+        unvisited = [(dx, dy, nb) for dx, dy, nb in neighbours
+                     if nb not in particle["visited"]]
+
+        if unvisited:
+            # Cost = ω + c₁·r₁·d_pbest + c₂·r₂·d_gbest (Clerc 2004 discrete PSO).
+            # r₁, r₂ are drawn independently per candidate (matching the original
+            # cost-based DFS formulation) so that equidistant neighbours get
+            # different random scalings and particles at the same cell choose
+            # different directions, maintaining swarm diversity.
+            pb = particle["personal_best"]
+            pb_cell = self.discretize_position(
+                np.asarray(pb, dtype=float).ravel()[:2]
+            )
+            gb_pos = global_best_position if global_best_position is not None \
+                else self.global_best_position
+            gb_cell = self.discretize_position(
+                np.asarray(gb_pos, dtype=float).ravel()[:2]
+            )
+
+            best_cost = float("inf")
+            target: tuple = unvisited[0][2]
+            best_dir: tuple = (unvisited[0][0], unvisited[0][1])
+            for dx, dy, nb in unvisited:
+                r1 = float(np.random.uniform(0.0, 1.0))
+                r2 = float(np.random.uniform(0.0, 1.0))
+                dp = _manhattan(nb, pb_cell)
+                dg = _manhattan(nb, gb_cell)
+                cost = self.omega + self.c1 * r1 * dp + self.c2 * r2 * dg
+                if cost < best_cost:
+                    best_cost = cost
+                    target = nb
+                    best_dir = (dx, dy)
+
+            particle["position"] = np.array([float(target[0]), float(target[1])])
+            particle["velocity"] = np.clip(
+                np.array([float(best_dir[0]), float(best_dir[1])]),
+                -self.vmax,
+                self.vmax,
+            )
+            return target
+
+        # All open neighbours already visited — DFS backtrack one step.
+        # visited is intentionally NOT shrunk: previously explored cells remain
+        # marked so the particle looks for genuinely new branches after returning.
+        if len(particle["path"]) > 1:
+            particle["path"].pop()
+            parent = particle["path"][-1]
+            particle["position"] = np.array([float(parent[0]), float(parent[1])])
+            # velocity is preserved; the canonical update will adjust it next step
+            return parent
+
+        # At start cell with no unvisited open neighbours (fully explored, stuck).
+        return cell
+
+    def update_position(self, particle: dict, global_best_position: np.ndarray = None) -> None:
         """
         Apply x(t+1) = x(t) + v(t+1), then enforce the grid constraints:
 
@@ -161,9 +248,13 @@ class PSO:
           position unconditionally (the particle is still inside the same cell);
         - if the starting cell is out of bounds, accept the move unconditionally
           (used in unit tests that set up particles at arbitrary positions);
-        - if it changed to an adjacent open cell, accept the move;
-        - otherwise (out-of-bounds, walled-off, or a multi-cell jump) the
-          particle is absorbed: velocity is zeroed, position is unchanged.
+        - if it changed to an adjacent open cell, snap position to cell centre
+          (integer coordinates) so pbest stores clean grid coordinates;
+        - otherwise (out-of-bounds, walled-off, or a multi-cell jump) use
+          velocity projection: move to the open neighbour most aligned with
+          the current velocity direction.  Snapping to cell centre and
+          pointing velocity toward the chosen cell ensures particles always
+          make forward progress instead of freezing at boundaries.
 
         After the position decision, the path is always synced to the current
         discretized position so that entropy sampling and tests can read it.
@@ -173,21 +264,34 @@ class PSO:
         new_cell = self.discretize_position(new_pos)
 
         if new_cell == prev_cell:
-            particle["position"] = new_pos
-            current_cell = new_cell
+            # Sub-cell move — velocity too small to cross a cell boundary.
+            # Force a DFS step so every iteration makes real maze progress
+            # (matches the old cost-based PSO's one-step-per-iteration contract).
+            gb_for_project = global_best_position if global_best_position is not None \
+                else self.global_best_position
+            current_cell = self._project_move(particle, prev_cell, gb_for_project)
         elif not self.maze.in_bounds(*prev_cell):
+            # OOB start position — accept unconditionally (unit-test contract)
             particle["position"] = new_pos
             current_cell = new_cell
         elif (
             _manhattan(prev_cell, new_cell) == 1
             and self.maze.in_bounds(*new_cell)
             and not self.maze.has_wall_between(prev_cell, new_cell)
+            and new_cell not in particle["visited"]
         ):
-            particle["position"] = new_pos
+            # Valid single-cell move to an unvisited cell — snap to cell centre.
+            # Visited cells are excluded: accepting a backward canonical move
+            # would desync particle["position"] from particle["path"][-1] and
+            # corrupt the DFS trail (path would skip cells, backtracks would
+            # pop the wrong cell, and the visited invariant would break).
+            particle["position"] = np.array([float(new_cell[0]), float(new_cell[1])])
             current_cell = new_cell
         else:
-            particle["velocity"] = np.array([0.0, 0.0])
-            current_cell = prev_cell
+            # Invalid, OOB, multi-cell, or backward (visited) move — use DFS.
+            gb_for_project = global_best_position if global_best_position is not None \
+                else self.global_best_position
+            current_cell = self._project_move(particle, prev_cell, gb_for_project)
 
         if particle["path"][-1] != current_cell and current_cell not in particle["visited"]:
             particle["path"].append(current_cell)
@@ -216,10 +320,16 @@ class PSO:
         """
         if "personal_best_distance" in particle:
             self.update_velocity(particle, global_best_position)
-        self.update_position(particle)
+        gb = global_best_position
+        if not (isinstance(gb, np.ndarray) and gb.ndim == 1 and gb.shape[0] == 2):
+            gb = np.asarray(gb, dtype=float).ravel()[:2]
+        self.update_position(particle, gb)
 
-        current_cell = particle["path"][-1]
-        current_distance = float(_manhattan(current_cell, self.maze.goal))
+        # Fitness uses actual discrete position so pbest/gbest reflect where
+        # particles are physically closest to goal, even when navigating through
+        # already-visited cells (where path[-1] would otherwise be stale).
+        actual_cell = self.discretize_position(particle["position"])
+        current_distance = float(_manhattan(actual_cell, self.maze.goal))
         if current_distance < particle.get("personal_best_distance", float("inf")):
             particle["personal_best"] = particle["position"].copy()
             particle["personal_best_distance"] = current_distance
@@ -270,6 +380,10 @@ class PSO:
 
                 # Truncate any discrete trail that crossed the new wall and
                 # snap the continuous position back to the truncated endpoint.
+                # personal_best / personal_best_distance are intentionally
+                # NOT reset: retaining the pre-disruption best keeps the
+                # cost function pointing toward the goal region so particles
+                # continue searching for an alternative route.
                 for part in particles:
                     path = part["path"]
                     for i in range(len(path) - 1):
@@ -282,10 +396,6 @@ class PSO:
                                 [float(anchor[0]), float(anchor[1])]
                             )
                             part["velocity"] = np.array([0.0, 0.0])
-                            part["personal_best"] = part["position"].copy()
-                            part["personal_best_distance"] = float(
-                                _manhattan(anchor, self.maze.goal)
-                            )
                             break
 
             # ---- One swarm-wide step ----
