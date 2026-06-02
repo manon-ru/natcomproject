@@ -214,13 +214,74 @@ ACO & PP & 150 & 1.00 & 78 & 1.00 & N/A & 4.48 & 2.62 & N/A \\
 \label{tab:summary}
 \end{table}
 
-The Success Rate (SR) ranges from 0.00 to 1.00. The Optimality (Opt) value is $\geq 1.00$, where 1.00 represents the absolute shortest path. N/A in this table indicates a metric was not applicable, such as no Adaptation Time for static mazes or no Optimality score if the SR is 0.00.
+\subsection{Diversity dynamics (SQ1)}
+Figure~\ref{fig:entropy} shows the entropy curves with 95\% bands. The three architectures produce visibly distinct signatures, but \emph{not} the ones H1 predicted. ACO sustains the highest diversity, climbing to a broad plateau as ants explore many cells; PSO settles at a moderate, stable level; and GA collapses almost immediately to a very low floor and stays there. The ordering of mean entropy is therefore $\text{ACO} > \text{PSO} > \text{GA}$ in every maze and at every population size, the reverse of the H1 prediction that GA would be the most diverse. We return to why in the Discussion.
 
-As Table \ref{tab:summary} shows, GA completely fails on the Shortest Path Trap (SPT) and Sudden Wall (SW) environments with a success rate of 0.00. Looking at the $\bar{H}$ values, GA exhibits a very low mean entropy. This indicates a severe lack of spatial diversity, suggesting the population becomes permanently stuck in a local optimum. This degree of failure from the GA architecture was unexpected.
+\begin{figure}[ht]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{../figures/entropy_shortest_path_trap_pop50.png}
+\caption{Shortest Path Trap}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{../figures/entropy_sudden_wall_pop50.png}
+\caption{Sudden Wall}
+\end{subfigure}
+\caption{Population diversity (Shannon entropy, bits) over iterations at population 50, with 95\% bands across 100 runs. ACO (green) sustains the highest diversity, PSO (orange) plateaus at a moderate level, and GA (blue) collapses to a low floor within the first iterations.}
+\label{fig:entropy}
+\end{figure}
 
-For the tightly coupled and environmentally coupled architectures (PSO and ACO), spatial diversity increases alongside population size. A larger population yields a higher diversity floor and mean entropy, leading to broader exploration of the search space. Consequently, they avoid becoming trapped and find the optimal path in fewer iterations. In the Sudden Wall maze, both architectures maintain a success rate of 1.00 and adapt remarkably fast, requiring only 1 to 2 iterations to recover. This rapid adaptation is likely driven by their high diversity floors, as the algorithms have already explored alternative routes before the disruption occurs.
+\subsection{Task performance and environmental challenge (SQ2)}
+Figure~\ref{fig:success} reports success rate by population. The pattern is sharp: GA solves only Parallel Paths and fails completely (SR$=0.00$) on both the Shortest Path Trap and the Sudden Wall, while ACO solves every maze at every size and PSO solves the trap and the wall reliably once it functions as intended. Where they succeed, both coupled architectures find near-optimal routes (Opt $\approx 1.00$ in Table~\ref{tab:summary}), so their success is genuine pathfinding and not a long wandering route that happens to reach the goal.
 
-Although both PSO and ACO consistently achieve success rates of 1.00, ACO requires fewer iterations overall. We initially hypothesized that ACO would require longer adaptation times due to the persistence of outdated pheromone trails. However, the environmental memory proved flexible enough to allow nearly instant adaptation. Furthermore, our expectation that larger population sizes would amplify PSO's vulnerabilities to deceptive traps was incorrect. The results indicate that increased scale actually improves PSO's performance by reducing the total iterations required to find the goal.
+Adaptation after the Sudden-Wall disruption (Figure~\ref{fig:adapt}) is the clearest reversal of our hypotheses. We predicted ACO would be slowest because of stale pheromone; instead ACO recovers in about one iteration at every size, and PSO recovers almost as fast, because both maintain a high diversity floor and have therefore \emph{already} explored the alternative route before the wall appears. GA, the architecture we expected to adapt fastest, is the slowest of the three and never actually reaches the goal on this maze.
+
+\begin{figure}[ht]
+\centering
+\begin{subfigure}{0.32\textwidth}
+\includegraphics[width=\textwidth]{../figures/success_rate_shortest_path_trap.png}
+\caption{Shortest Path Trap}
+\end{subfigure}\hfill
+\begin{subfigure}{0.32\textwidth}
+\includegraphics[width=\textwidth]{../figures/success_rate_sudden_wall.png}
+\caption{Sudden Wall}
+\end{subfigure}\hfill
+\begin{subfigure}{0.32\textwidth}
+\includegraphics[width=\textwidth]{../figures/success_rate_parallel_paths.png}
+\caption{Parallel Paths}
+\end{subfigure}
+\caption{Success rate by population size and maze. GA (blue) succeeds only on Parallel Paths; the coupled architectures solve the deceptive and non-stationary mazes.}
+\label{fig:success}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.6\textwidth]{../figures/adaptation_time_sudden_wall.png}
+\caption{Adaptation time on the Sudden Wall (iterations to recover 80\% of pre-disruption entropy). The coupled architectures recover almost immediately; GA's adaptation time grows with population yet never converts into a successful solve.}
+\label{fig:adapt}
+\end{figure}
+
+\subsection{Effect of population scale (SQ3)}
+Across all three algorithms and mazes the diversity floor \emph{increases} monotonically with population (20 $\to$ 50 $\to$ 150). Larger populations therefore help every architecture maintain spatial spread; they do not amplify a weakness in PSO as H3 predicted. For PSO and ACO the higher floor translates into fewer iterations to the goal (Table~\ref{tab:summary}). For GA the floor also rises with scale, but not enough to cross the threshold needed to solve the trap or the wall: more agents explore more, yet none escape the deceptive optimum.
+
+\subsection{Did GA fail, or is it a bug? } \label{ga-failure}
+GA's complete failure on two of three mazes is the most surprising result, so we treat the implementation-bug hypothesis as a serious alternative and rule it out with three pieces of evidence. First, GA \emph{does} succeed at 100\% on Parallel Paths with near-optimal paths, which shows the encoding, fitness, selection, crossover, and goal test are all wired correctly --- a broken GA would not solve any maze optimally. Second, the iteration-budget sweep (Figure~\ref{fig:gabudget}) runs GA on the trap up to 50{,}000 generations ($\approx$2.5M evaluations): success stays at 0\% and the best-found distance to the goal plateaus at exactly one cell for every budget. GA reliably reaches the cell adjacent to the goal and cannot take the final step, which is the signature of a deceptive local optimum, not of insufficient compute. Third, the parameter sweep (Figure~\ref{fig:gasens}) varies mutation rate and chromosome length and finds 0\% success across all settings, with only mean entropy responding; the failure is therefore structural rather than a poor parameter choice. Together these show GA's failure reflects a genuine limitation of the decoupled architecture on deceptive landscapes, which is itself the finding rather than a defect to be fixed.
+
+\begin{figure}[ht]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{../figures/ga_iteration_budget.png}
+\caption{Iteration-budget sweep}
+\label{fig:gabudget}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{../figures/ga_sensitivity.png}
+\caption{Mutation-rate / length sweep}
+\label{fig:gasens}
+\end{subfigure}
+\caption{Evidence that GA's failure is structural. (a) Even at 50{,}000 generations GA never solves the trap and stalls one cell from the goal. (b) Across mutation rates and chromosome lengths success remains 0\%; only diversity responds. Both rule out under-compute and poor tuning as explanations.}
+\label{fig:gadiag}
+\end{figure}
 
 \section{Discussion}
 
