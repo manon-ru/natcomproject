@@ -291,24 +291,30 @@ The headline finding is a clean reversal of our hypotheses, and it sharpens rath
 The mechanism explains why. GA's decoupling is not a source of protective diversity but of \emph{wasted} diversity: its agents explore independently, but with no shared memory the population has no way to retain and build on the discovery that the dead end must be left. Selection on a distance-to-goal fitness actively pulls the population into the trap, and recombination of trapped parents produces trapped children, so the high apparent ``diversity'' is noise around a bad optimum rather than coverage of useful alternatives. The coupled architectures succeed for the same reason in reverse: PSO's social term and ACO's pheromone are shared memory that lets a few lucky discoveries of the escape route propagate to the whole population. ACO is especially robust because its memory lives in the environment and decays, so an invalidated path is forgotten automatically --- which is exactly why its Sudden-Wall adaptation is near-instant rather than slow as we feared. The right axis, then, is not ``coupling hurts diversity'' but ``shared memory converts exploration into exploitable progress, and its absence leaves a population unable to commit even when it has already found the answer.''
 
 \subsection{Limitations}
-We fixed algorithm-specific parameters using values from the literature and did not perform parameter tuning. Our core theoretical objective was to observe the baseline behaviors of decoupled, tightly coupled, and environmentally coupled architectures. Extensive tuning per maze would obscure these inherent architectural differences by over-fitting the algorithms to specific problems. Our findings about coupling architectures are therefore conditional on these parameter choices.
+We fixed parameters from the literature and did not tune per maze. This is deliberate --- tuning would over-fit and obscure the architectural differences we set out to measure --- but it does mean our quantitative results are conditional on these parameter choices, and a heavily tuned GA might do better than the untuned one shown here (though the iteration-budget evidence suggests not on the trap). The dependence is sharpest for ACO's evaporation rate $\rho=0.1$, which produces long pheromone memory. We flagged in the proposal that this choice \emph{amplifies} the adaptation effects: a low $\rho$ makes pheromone persist, so the fact that ACO still adapts almost instantly is a conservative result --- a higher $\rho$ would only make recovery faster, so our central claim about ACO's robustness does not depend on a favourable $\rho$. We say this explicitly because the opposite framing (that we chose $\rho$ to flatter ACO) would be the natural worry, and the evidence runs the other way.
 
-This is particularly relevant for ACO's evaporation rate $\rho$, which directly controls the persistence of pheromone trails. Our choice of $\rho = 0.1$ produces long pheromone memory, which amplifies the adaptation effects predicted by our hypotheses. Higher $\rho$ values would likely weaken these effects. We acknowledge this dependency openly rather than claiming a robustness we have not tested.
+Two further limitations bound the generality of the claims. The parameters adapted from Shrestha et al.\ were tuned for a waypoint representation, not our cell-by-cell grid, so they are a reasonable but not optimal starting point. And no prior work in our reference set evaluates dynamic environments, so the Sudden-Wall results extend the comparative literature into territory where no validated baseline parameters exist; they should be read as a first characterisation rather than a tuned benchmark.
 
-Additionally, parameters adapted from Shrestha et al. \cite{10.5120/ijca2024923402} serve as a reasonable starting point, but they cannot be assumed optimal for our setup. Shrestha et al. use a waypoint-based path representation, whereas our grid-based formulation with cell-by-cell navigation and wall collisions differs significantly in its dynamics. Furthermore, neither of the mentioned related works evaluate dynamic environments. Our Sudden Wall findings therefore extend the comparative literature into territory where these baseline parameter choices have not yet been heavily validated.
+\subsection{Future work}
+Three extensions follow directly. First, an evaporation-rate sweep for ACO and an inertia/social-coefficient sweep for PSO would map how far the robustness we observe depends on memory persistence, turning the qualitative claim into a quantitative boundary. Second, a GA variant with shared memory --- for instance an island model with migration, or a memetic local-search step that can climb out of the trap --- would test our mechanism directly: if the failure is really the absence of shared memory, adding it should rescue GA on the trap. Third, scaling to larger and procedurally varied mazes, and to more than one disruption per run, would test whether the near-instant ACO/PSO recovery survives repeated non-stationarity or is an artifact of a single, mild disruption.
 
 \section{Conclusion}
-Abc
+Returning to the research question: the information architecture of a population-based pathfinder strongly shapes its adaptive behaviour, but along the opposite of the axis we hypothesised. Decoupling, which we expected to preserve useful diversity, instead leaves GA unable to escape a deceptive dead end or to re-route around a new wall, even with 25$\times$ the compute and across all parameter settings we tested. Shared memory --- PSO's global best and especially ACO's decaying pheromone --- is what lets a population convert exploration into a committed, recoverable solution, and it is the environmentally coupled architecture that adapts fastest to change. Increasing population size helps every architecture by raising the diversity floor, but it does not rescue the decoupled one. We therefore conclude that the line of work is worth pursuing: a single controlled coupling axis already produces a clear, mechanistic, and partly counter-intuitive story, and the obvious next step --- adding shared memory to GA and sweeping the memory parameters of PSO and ACO --- is well-posed and likely to be informative.
 
-\section{Author Contribution}
-Manon: Implemented base mazes, implemented base GA algorithm, contributed to the project proposal and renewed project proposal, incorporated feedback on renewed proposal, made and presented flash talk.
+\section*{Supplements}
 
-Nemo:
+\section*{Author Contributions}
+\textit{[To confirm/expand --- Nemo and Robert to fill their lines.]}
 
-Robert:
+\noindent\textbf{Manon Leijser:} Implemented the base mazes and the base GA algorithm; contributed to the project proposal and the renewed proposal; incorporated feedback on the renewed proposal; prepared and delivered the flash talk.
 
-\section{Supplements}
-Link to GitHub Code
+\noindent\textbf{Nemo Ingendaa:} \textit{[contribution to be added]}
+
+\noindent\textbf{Robert Blaauwendraad:} \textit{[contribution to be added]}
+
+\section*{Supplements}
+Source code, all maze-generation and experiment scripts, the full \texttt{runs.csv} (2{,}700 runs), figures, and a README with installation instructions, package/version pinning (\texttt{uv.lock}), a usage manual, and a sample run are available at:\\
+\textbf{GitHub:} \texttt{https://github.com/manon-ru/natcomproject}
 
 \bibliographystyle{plain}
 \bibliography{bibliography-project}
