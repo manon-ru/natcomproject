@@ -33,17 +33,17 @@ Pathfinding in 2D Mazes}
 \section{Problem Statement}
 While standard algorithms like A* excel in static environments and simple grids, they often struggle in unpredictable environments with deceptive dead ends. When an environment suddenly changes, these solvers often have to start over. In contrast, natural computing algorithms use a population to solve problems, allowing the group to adapt together.
 
-The central theoretical question of this project is not which algorithm performs best, but how different information architectures shape a population's adaptive behavior in environments that impose different challenges. We focus on three paradigms representing distinct architectures of inter-agent coupling:
+The central theoretical question of this project is not which algorithm performs best, but how different information architectures shape a population's adaptive behaviour in environments that impose different challenges. We study three paradigms that represent distinct architectures of inter-agent coupling:
 
 \begin{itemize}
-    \item \textbf{Genetic Algorithms (GA)} are decoupled. Active agents share no runtime information during their evaluation. Knowledge is instead passed vertically between distinct generations through selection pressure and recombination.
-    \item \textbf{Particle Swarm Optimization (PSO)} is tightly coupled. Every agent immediately knows the group's best position, producing high social pressure.
-    \item \textbf{Ant Colony Optimization (ACO)} is environmentally coupled. Agents communicate indirectly through pheromone trails on the grid. The environment itself becomes the collective memory.
+    \item \textbf{Genetic Algorithms (GA)} are \emph{decoupled}. Active agents share no runtime information during their evaluation. Knowledge is passed vertically between generations through selection pressure and recombination.
+    \item \textbf{Particle Swarm Optimization (PSO)} is \emph{tightly coupled}. Every agent immediately knows the group's best position, producing high social pressure.
+    \item \textbf{Ant Colony Optimization (ACO)} is \emph{environmentally coupled}. Agents communicate indirectly through pheromone trails on the grid, so the environment itself becomes the collective memory.
 \end{itemize}
 
-These paradigms give us a natural axis along which to study coupling: no shared memory (GA), continuous global memory (PSO), and distributed environmental memory (ACO). By evaluating them in environments designed to stress different coupling mechanisms, we can characterize when each architecture fails and how effectively a population recovers its diversity.
+These paradigms give us a natural axis along which to study coupling: no shared memory (GA), continuous global memory (PSO), and distributed environmental memory (ACO). By evaluating them in environments designed to stress different coupling mechanisms, we can characterise when each architecture fails and how effectively a population recovers its diversity. This is the relevance of the work: pathfinding is a controlled, fully observable testbed in which a coupling axis can be isolated, and the conclusions about how shared memory helps or hurts adaptation transfer to any population-based optimiser facing deceptive or non-stationary objectives.
 
-\paragraph{Research Question.} To what extent do the information architectures of GA, PSO, and ACO, defined by their varying degrees of agent coupling, shape a population's adaptive behavior when the environment imposes distinct challenges of deception, non-stationarity, and multimodality?
+\paragraph{Research Question.} To what extent do the information architectures of GA, PSO, and ACO, defined by their varying degrees of agent coupling, shape a population's adaptive behaviour when the environment imposes distinct challenges of deception, non-stationarity, and multimodality?
 
 We decompose this into three subquestions:
 \begin{itemize}
