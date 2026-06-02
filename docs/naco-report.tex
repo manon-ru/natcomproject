@@ -80,7 +80,7 @@ Pathfinding in 2D Mazes}
     We model the environment as a 2D grid where agents navigate from a start node to a goal node in the fewest steps. We deliberately chose a discrete grid over a continuous space so that spatial memory (ACO's pheromone) maps directly onto the navigation space, isolating the architectural differences without an interpolation layer that would itself need tuning and would confound the comparison. Walls block movement, and the four-neighbour adjacency means any valid path is a connected sequence of cells, which is the property our GA crossover relies on (below).
 
     \subsection{Algorithm parameters and their justification}
-    Because our objective is to strictly compare the different information architectures rather than to maximise absolute performance, we did not tune parameters per maze. Tuning each algorithm to each environment would over-fit and mask the very architectural differences we want to observe; instead we fix parameters from literature sources chosen to match each algorithm's most comparable problem formulation (Table~\ref{tab:parameters}). Since no single paper tunes all three on a grid-based maze with cell-by-cell navigation, we combine sources and document each adaptation. The one parameter we examine for sensitivity is GA's mutation rate and chromosome length (Section~\ref{ga-failure}), because the GA result is the most surprising and most needs to be shown robust to these choices.
+    Because our objective is to strictly compare the different information architectures rather than to maximise absolute performance, we did not tune parameters per maze. Tuning each algorithm to each environment would over-fit and mask the very architectural differences we want to observe; instead we fix parameters from literature sources chosen to match each algorithm's most comparable problem formulation (Table~\ref{tab:parameters}). Since no single paper tunes all three on a grid-based maze with cell-by-cell navigation, we combine sources and document each adaptation.
 
     \begin{table}[ht]
         \centering
@@ -227,19 +227,23 @@ Pathfinding in 2D Mazes}
 
 
     \subsection{Diversity dynamics (SQ1)}
-    Figure~\ref{fig:entropy} shows the entropy curves with 95\% bands. The three architectures produce visibly distinct signatures, but \emph{not} the ones H1 predicted. ACO sustains the highest diversity, climbing to a broad plateau as ants explore many cells; PSO settles at a moderate, stable level; and GA collapses almost immediately to a very low floor and stays there. The ordering of mean entropy is therefore $\text{ACO} > \text{PSO} > \text{GA}$ in every maze and at every population size, the reverse of the H1 prediction that GA would be the most diverse. We return to why in the Discussion.
+    Figure~\ref{fig:entropy} shows the entropy curves with 95\% bands. On the deceptive trap (a) and the Sudden Wall (b) the two coupled architectures behave alike: ACO and PSO both climb to a high diversity plateau of roughly $5$ bits, with ACO reaching it faster so its \emph{mean} entropy is marginally the higher of the two (Table~\ref{tab:summary}). GA behaves very differently across these two mazes: on the trap it collapses to a floor near $0.5$ bits and never recovers, whereas on the wall it holds a steady, moderate level around $3$ bits. On Parallel Paths (c) the picture changes again: PSO collapses onto a single route and sits at the lowest diversity (lowest floor in Table~\ref{tab:summary}), ACO spreads across both routes and rises highest, and GA cannot be compared on equal terms because it reaches the goal in its first generation, so its tabulated entropy is merely the initial random spread of one generation rather than a sustained trajectory. The clearest reading of H1 is therefore the opposite of what it predicted: wherever GA actually searches over time (the trap and the wall) it is the \emph{least} diverse architecture, not the most.
 
     \begin{figure}[ht]
         \centering
-        \begin{subfigure}{0.48\textwidth}
+        \begin{subfigure}{0.32\textwidth}
             \includegraphics[width=\textwidth]{imgs_project/entropy_shortest_path_trap_pop50.png}
             \caption{Shortest Path Trap}
         \end{subfigure}\hfill
-        \begin{subfigure}{0.48\textwidth}
+        \begin{subfigure}{0.32\textwidth}
             \includegraphics[width=\textwidth]{imgs_project/entropy_sudden_wall_pop50.png}
             \caption{Sudden Wall}
+        \end{subfigure}\hfill
+        \begin{subfigure}{0.32\textwidth}
+            \includegraphics[width=\textwidth]{imgs_project/entropy_parallel_paths_pop50.png}
+            \caption{Parallel Paths}
         \end{subfigure}
-        \caption{Population diversity (Shannon entropy, bits) over iterations at population 50, with 95\% bands across 100 runs. ACO (green) sustains the highest diversity, PSO (orange) plateaus at a moderate level, and GA (blue) collapses to a low floor within the first iterations.}
+        \caption{Population diversity (Shannon entropy, bits) over iterations at population 50, with 95\% bands across 100 runs. On the deceptive trap (a) and the Sudden Wall (b), ACO (green) and PSO (orange) both climb to a high plateau near $5$ bits (ACO faster); GA (blue) collapses to about $0.5$ bits on the trap but holds a moderate $\sim 3$ bits on the wall. The dashed line in (b) marks the disruption at $T=100$. On Parallel Paths (c), PSO sits lowest having collapsed onto a single route, while ACO rises highest; GA is not visible because it solves the maze in its first generation, leaving a single high-entropy point at the left edge rather than a curve.}
         \label{fig:entropy}
     \end{figure}
 
