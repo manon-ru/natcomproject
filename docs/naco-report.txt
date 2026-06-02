@@ -128,41 +128,41 @@ We use three maze types, each engineered to isolate one environmental challenge 
 
 \paragraph{Maze 3 --- Parallel Paths (multimodality).} Two routes of (almost) identical length are available from the start, one slightly shorter via a small detour. This tests whether a population can spread across multiple equally good optima or whether coupling forces premature commitment to one.
 
-\subsection{Experimental Design}
-We perform a consolidated experiment with three factors: algorithm, maze type, and population size. This design answers all three subquestions from one coherent data set rather than treating them as separate studies.
+\subsection{Experimental design} \label{design}
+We run one consolidated three-factor experiment --- algorithm $\times$ maze type $\times$ population size --- rather than three separate studies, so that main effects \emph{and} interactions come from one coherent dataset. We made this choice because the interesting questions (does the effect of scale depend on the environment? does coupling scale differently?) are interaction effects, which a set of one-factor-at-a-time studies cannot recover.
 
 \begin{itemize}
     \item \textbf{Algorithms:} GA, PSO, ACO (addresses SQ1).
     \item \textbf{Maze types:} Shortest Path Trap, Sudden Wall, Parallel Paths (addresses SQ2).
-    \item \textbf{Population sizes:} 20, 50, 150 (addresses SQ3). The range covers Shrestha's reported values from 20 to 70 and extends to 150 to test scale effects.
+    \item \textbf{Population sizes:} 20, 50, 150 (addresses SQ3); the range spans Shrestha's reported 20--100 and extends to 150.
 \end{itemize}
 
-Each of the 27 experimental cells is evaluated on 10 distinct maze instances (seeds) with 10 independent trials per instance. This yields 100 runs per condition for a total computational budget of 2,700 runs. To ensure fair comparison and reproducibility, we control the random seeds so that all three algorithms evaluated the exact same generated maze instances.
+Each of the 27 cells is evaluated on 10 maze instances with 10 trials each, giving 100 runs per cell and 2{,}700 runs total. We control random seeds so that all three algorithms see the \emph{exact same} generated maze instances, which is what makes the cross-algorithm comparison fair: differences cannot be attributed to one algorithm receiving easier mazes. The iteration limit is set to $10\times$ the A* shortest-path length for that instance, so the budget scales with intrinsic difficulty and is identical across algorithms on a given instance.
 
-This three-way factorial design allows us to analyze both the individual main effects of our variables and the interaction effects between them. Specifically, we are able to evaluate whether the impact of population size changes depending on the maze structure or if coupling dynamics scale differently across population sizes.
+\subsection{Evaluation metrics and why they are appropriate} \label{metrics}
+Our research question is about \emph{adaptive behaviour}, not just whether the goal is reached, so we pair internal-dynamics metrics (entropy) with grounding performance metrics (success, optimality). Each metric is chosen to answer a specific subquestion, and we state the link explicitly.
 
-\subsection{Evaluation Metrics}
-To evaluate how the three architectures adapt, we measure both their internal population dynamics and their final performance. We focus on spatial diversity and recovery speed to answer our main research questions, while also tracking standard success rates to ensure the algorithms actually solve the mazes.
-
-\paragraph{Spatial Diversity (Shannon Entropy).} A central tension in natural computing is the balance between exploration and exploitation. We measure this as spatial diversity: the degree to which agents are distributed across structurally distinct regions of the maze at any given iteration. We quantify this using position-wise Shannon entropy:
+\paragraph{Spatial diversity (Shannon entropy), addresses SQ1.} We operationalise the exploration--exploitation balance as spatial diversity: how widely agents are spread across structurally distinct regions at a given iteration. We quantify it with position-wise Shannon entropy
 \[
-H_i = -\sum_{j \in \Sigma} f_{ij} \log f_{ij}
+H_i = -\sum_{j \in \Sigma} f_{ij}\,\log f_{ij},
 \]
-where $f_{ij}$ is the frequency of agents occupying cell $j$ at iteration $i$. The shape of this entropy curve is our main diagnostic of coupling behavior. A sharp cliff indicates rapid collapse consistent with tight coupling. A slow drift indicates lag in environmental memory. A noisy plateau indicates stochastic wandering. To compare the algorithms statistically, we extract three summary metrics from this curve:
-\begin{enumerate}
-    \item \textbf{Time to 50\% entropy loss} measures the speed of collapse by tracking the iterations required for entropy to drop to half of its maximum peak value. Measuring from the peak rather than the start ensures we capture the true speed of collapse only after the population has reached its maximum exploratory spread.
-    \item \textbf{Diversity floor} is defined as the absolute minimum entropy reached at any point after this peak exploration phase. This isolates the severity of the algorithm's worst convergence while ignoring the naturally low diversity of the initial starting state.
-    \item \textbf{Mean entropy} across the run measures the sustained diversity over the entire simulation.
-\end{enumerate}
+where $f_{ij}$ is the fraction of agents in cell $j$ at iteration $i$. Entropy is appropriate here because it is exactly the quantity that distinguishes the three coupling regimes: a tightly coupled swarm concentrates mass on few cells (low $H$), while an exploratory population spreads it out (high $H$). The \emph{shape} of the curve is our main diagnostic --- a sharp cliff indicates rapid collapse, a slow drift indicates lagging environmental memory, a noisy plateau indicates stochastic wandering. For statistical comparison we extract three scalars: \emph{time to 50\% entropy loss} (speed of collapse, measured from the peak so we capture collapse only after maximum spread), \emph{diversity floor} (the minimum entropy after the peak, i.e.\ severity of the worst convergence), and \emph{mean entropy} (sustained diversity over the run).
 
-\paragraph{Adaptation time in Maze 2.} Iterations from disruption at $T = 100$ until the population's mean entropy first returns to 80\% of its pre-disruption value. A threshold is required because entropy recovers gradually and ``recovered" has no natural cutoff. We apply the same 80\% threshold to every algorithm, population size, and maze instance. Runs failing to recover the 80\% threshold before the iteration limit are excluded from the adaptation time average and are instead captured solely by the success rate metric. This addresses SQ2 by quantifying recovery speed after an environmental disruption.
+\paragraph{Adaptation time in Maze 2, addresses SQ2.} Iterations from the disruption at $T=100$ until mean entropy first returns to 80\% of its pre-disruption value. A threshold is needed because entropy recovers gradually and ``recovered'' has no natural cutoff; we apply the same 80\% threshold to every algorithm, size, and instance so the comparison is fair. Runs that never recross 80\% before the limit are excluded from the adaptation average and captured instead by the success rate, so a slow recoverer is not silently scored as fast.
 
-\paragraph{Success rate across 100 runs per experimental cell.} We define success as the algorithm reaching the goal within the given iteration limit ($10 \times \textbf{shortest path length}$). High spatial diversity is only valuable if the algorithm can actually solve the maze. Tracking this rate grounds our exploration data in actual performance and highlights any situations where an algorithm's coupling architecture prevents it from finishing the task.
+\paragraph{Success rate (100 runs/cell).} Fraction of runs reaching the goal within the iteration limit. High diversity is worthless if the goal is never found, so success rate grounds the entropy analysis in actual task completion and flags cases where an architecture's coupling prevents finishing.
 
-\paragraph{Path optimality relative to the A* optimum.} We compute this metric strictly for successful runs by comparing the algorithm's final path length to the absolute shortest path found with the A* algorithm. This ensures that high exploration behavior leads to an efficient route rather than just random wandering. It also provides a clear, objective baseline to judge the quality of the final solutions.
+\paragraph{Path optimality relative to A*.} Final path length divided by the A* optimum, computed for successful runs only. This guards against rewarding aimless wandering: an algorithm could keep entropy high yet return a poor route, and optimality catches that. A* provides a deterministic, objective baseline ($1.00$ = optimal).
 
+\subsection{Statistical analysis plan} \label{stats}
+Because every cell is repeated 100 times, we report dispersion, not just point estimates, and test the comparisons the subquestions actually ask about. (Final values are computed once the confirmatory run completes; the procedure is fixed in advance here to avoid post-hoc selection.)
+\begin{itemize}
+    \item \textbf{Uncertainty.} For each cell we report the mean and a 95\% confidence interval (bootstrap, 10{,}000 resamples) for success rate, iterations, optimality, and the entropy scalars. Entropy curves in the figures are shown with shaded 95\% bands across the 100 runs.
+    \item \textbf{Pairwise differences.} For the headline contrasts (e.g.\ GA vs.\ PSO vs.\ ACO within a maze$\times$size cell) we use the Mann--Whitney $U$ test on the per-run metric, since success and optimality are bounded and non-normal, with Holm correction across the family of comparisons.
+    \item \textbf{Factor effects (SQ3).} We fit the metrics with algorithm, maze, and population as factors and test the population main effect and the algorithm$\times$population interaction, which is the formal version of ``does scale help, and does that depend on the architecture?''.
+    \item \textbf{Effect sizes.} Alongside $p$-values we report rank-biserial correlation, so that differences are judged by magnitude and not only significance given the large $n$.
+\end{itemize}
 
-\newpage
 \section{Results}
 \begin{table}[ht]
 \centering
@@ -203,7 +203,9 @@ ACO & PP & 50 & 1.00 & 78 & 1.00 & N/A & 4.00 & 2.43 & N/A \\
 ACO & PP & 150 & 1.00 & 78 & 1.00 & N/A & 4.48 & 2.62 & N/A \\
 \bottomrule
 \end{tabular}
-\caption{Summary metrics per experimental cell (3 algorithms × 3 maze types × 3 population sizes). Algo=algorithm, Maze=maze type (SPT=shortest path, SW=sudden wall, PP=parallel paths), Pop=population, SR=success rate, Iters=mean iterations, Opt=mean path optimality, $t_{50\%}$=time to 50\% entropy loss, Floor=diversity floor, $\bar{H}$=mean entropy, Adapt=adaptation time (Sudden Wall only).}
+\caption{Summary metrics per experimental cell (3 algorithms $\times$ 3 maze types $\times$ 3 population sizes; 100 runs each).
+\textbf{Algo}=algorithm; \textbf{Maze}=maze type (SPT=Shortest Path Trap, SW=Sudden Wall, PP=Parallel Paths); \textbf{Pop}=population size (number of agents, 20/50/150); \textbf{SR}=success rate ($0.00$--$1.00$); \textbf{Iters}=mean iterations to goal (or to the iteration limit if unsolved); \textbf{Opt}=mean path optimality ($\geq 1.00$, $1.00$=A* optimum); \textbf{$t_{50\%}$}=iterations from the entropy peak to 50\% loss; \textbf{Floor}=minimum post-peak entropy (bits); \textbf{$\bar{H}$}=mean entropy (bits); \textbf{Adapt}=iterations to recover 80\% entropy after the Sudden-Wall disruption.
+\texttt{N/A} means the metric does not apply: Opt when SR$=0$ (no successful run to measure), Adapt outside Sudden Wall, and $t_{50\%}$ when entropy never falls to half its peak.}
 \label{tab:summary}
 \end{table}
 
