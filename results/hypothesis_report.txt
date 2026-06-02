@@ -6,21 +6,21 @@ Algo  Maze              Pop     Success  Optimality
 GA    Shortest Path Trap20   0/100 (0%)         nan
 GA    Shortest Path Trap50   0/100 (0%)         nan
 GA    Shortest Path Trap150  0/100 (0%)         nan
-GA    Sudden Wall       20   0/100 (0%)         nan
-GA    Sudden Wall       50   0/100 (0%)         nan
-GA    Sudden Wall       150  0/100 (0%)         nan
-GA    Parallel Paths    20   100/100 (100%)       1.025
-GA    Parallel Paths    50   100/100 (100%)       1.022
-GA    Parallel Paths    150  100/100 (100%)       1.024
-PSO   Shortest Path Trap20   0/100 (0%)         nan
-PSO   Shortest Path Trap50   0/100 (0%)         nan
-PSO   Shortest Path Trap150  0/100 (0%)         nan
-PSO   Sudden Wall       20   0/100 (0%)         nan
-PSO   Sudden Wall       50   0/100 (0%)         nan
-PSO   Sudden Wall       150  0/100 (0%)         nan
-PSO   Parallel Paths    20   0/100 (0%)         nan
-PSO   Parallel Paths    50   0/100 (0%)         nan
-PSO   Parallel Paths    150  0/100 (0%)         nan
+GA    Sudden Wall       20   42/100 (42%)       1.000
+GA    Sudden Wall       50   47/100 (47%)       1.000
+GA    Sudden Wall       150  65/100 (65%)       1.000
+GA    Parallel Paths    20   100/100 (100%)       1.013
+GA    Parallel Paths    50   100/100 (100%)       1.004
+GA    Parallel Paths    150  100/100 (100%)       1.000
+PSO   Shortest Path Trap20   100/100 (100%)       1.000
+PSO   Shortest Path Trap50   100/100 (100%)       1.000
+PSO   Shortest Path Trap150  100/100 (100%)       1.000
+PSO   Sudden Wall       20   100/100 (100%)       1.000
+PSO   Sudden Wall       50   100/100 (100%)       1.000
+PSO   Sudden Wall       150  100/100 (100%)       1.000
+PSO   Parallel Paths    20   97/100 (97%)       1.021
+PSO   Parallel Paths    50   100/100 (100%)       1.016
+PSO   Parallel Paths    150  100/100 (100%)       1.014
 ACO   Shortest Path Trap20   100/100 (100%)       1.000
 ACO   Shortest Path Trap50   100/100 (100%)       1.000
 ACO   Shortest Path Trap150  100/100 (100%)       1.000
@@ -38,51 +38,51 @@ Prediction: PSO collapses fastest, GA most stable, ACO in between.
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  GA < PSO < ACO
-      values:    GA=10.300  PSO=81.111
+      values:    GA=10.100  PSO=416.667
       verdict:   CONTRADICTED
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
       observed:  GA < PSO < ACO
-      values:    GA=0.000  PSO=0.959  ACO=4.053
+      values:    GA=0.000  PSO=3.750  ACO=4.053
       verdict:   CONTRADICTED
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
       observed:  ACO > PSO > GA
-      values:    GA=0.417  PSO=1.043  ACO=3.561
+      values:    GA=0.387  PSO=3.313  ACO=3.561
       verdict:   CONTRADICTED
 
   Maze: Sudden Wall
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
-      observed:  PSO < GA < ACO
-      values:    GA=99.798  PSO=89.403  ACO=190.000
-      verdict:   PARTIAL (worst matches)
+      observed:  GA < ACO < PSO
+      values:    GA=66.737  PSO=280.000  ACO=190.000
+      verdict:   CONTRADICTED
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
-      observed:  PSO < GA < ACO
-      values:    GA=0.753  PSO=0.574  ACO=3.614
-      verdict:   PARTIAL (worst matches)
+      observed:  GA < ACO < PSO
+      values:    GA=0.816  PSO=3.900  ACO=3.614
+      verdict:   CONTRADICTED
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
-      observed:  ACO > GA > PSO
-      values:    GA=2.239  PSO=0.699  ACO=3.739
+      observed:  ACO > PSO > GA
+      values:    GA=2.195  PSO=3.182  ACO=3.739
       verdict:   CONTRADICTED
 
   Maze: Parallel Paths
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  PSO < GA < ACO
-      values:    PSO=32.065
+      values:    PSO=14.286
       verdict:   PARTIAL (worst matches)
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
       observed:  PSO < GA < ACO
-      values:    GA=3.334  PSO=0.395  ACO=3.383
+      values:    GA=3.334  PSO=1.410  ACO=3.383
       verdict:   PARTIAL (worst matches)
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
       observed:  GA > ACO > PSO
-      values:    GA=3.334  PSO=0.520  ACO=2.152
+      values:    GA=3.334  PSO=1.058  ACO=2.152
       verdict:   SUPPORTED
 
 --- H1 (Coupling shapes diversity dynamics)  [pop=50] ---
@@ -92,51 +92,51 @@ Prediction: PSO collapses fastest, GA most stable, ACO in between.
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  GA < PSO < ACO
-      values:    GA=10.100  PSO=178.864
+      values:    GA=10.100
       verdict:   CONTRADICTED
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
       observed:  GA < PSO < ACO
-      values:    GA=0.078  PSO=1.268  ACO=5.173
+      values:    GA=0.072  PSO=5.110  ACO=5.173
       verdict:   CONTRADICTED
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
       observed:  ACO > PSO > GA
-      values:    GA=0.543  PSO=1.337  ACO=4.243
+      values:    GA=0.527  PSO=3.846  ACO=4.243
       verdict:   CONTRADICTED
 
   Maze: Sudden Wall
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  ACO < PSO < GA
-      values:    GA=528.182  PSO=182.182  ACO=160.000
+      values:    GA=360.769  PSO=220.000  ACO=160.000
       verdict:   CONTRADICTED
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
-      observed:  PSO < GA < ACO
-      values:    GA=1.780  PSO=0.814  ACO=4.763
-      verdict:   PARTIAL (worst matches)
+      observed:  GA < ACO < PSO
+      values:    GA=1.952  PSO=5.071  ACO=4.763
+      verdict:   CONTRADICTED
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
-      observed:  ACO > GA > PSO
-      values:    GA=2.882  PSO=0.894  ACO=4.577
+      observed:  ACO > PSO > GA
+      values:    GA=2.897  PSO=3.765  ACO=4.577
       verdict:   CONTRADICTED
 
   Maze: Parallel Paths
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  PSO < GA < ACO
-      values:    PSO=33.293
+      values:    PSO=18.000
       verdict:   PARTIAL (worst matches)
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
       observed:  PSO < GA < ACO
-      values:    GA=3.873  PSO=0.637  ACO=3.999
+      values:    GA=3.873  PSO=1.556  ACO=3.999
       verdict:   PARTIAL (worst matches)
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
       observed:  GA > ACO > PSO
-      values:    GA=3.873  PSO=0.765  ACO=2.427
+      values:    GA=3.873  PSO=1.096  ACO=2.427
       verdict:   SUPPORTED
 
 --- H1 (Coupling shapes diversity dynamics)  [pop=150] ---
@@ -146,110 +146,110 @@ Prediction: PSO collapses fastest, GA most stable, ACO in between.
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  GA < PSO < ACO
-      values:    GA=10.300  PSO=178.478
+      values:    GA=10.100
       verdict:   CONTRADICTED
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
       observed:  GA < PSO < ACO
-      values:    GA=0.283  PSO=1.348  ACO=6.295
+      values:    GA=0.277  PSO=5.997  ACO=6.295
       verdict:   CONTRADICTED
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
       observed:  ACO > PSO > GA
-      values:    GA=0.685  PSO=1.498  ACO=4.832
+      values:    GA=0.675  PSO=4.249  ACO=4.832
       verdict:   CONTRADICTED
 
   Maze: Sudden Wall
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
-      observed:  PSO < GA < ACO
-      values:    GA=251.471  PSO=169.200
-      verdict:   PARTIAL (worst matches)
+      observed:  GA < PSO < ACO
+      values:    GA=31.837  PSO=230.000
+      verdict:   CONTRADICTED
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
-      observed:  PSO < GA < ACO
-      values:    GA=2.347  PSO=0.948  ACO=5.718
-      verdict:   PARTIAL (worst matches)
+      observed:  GA < ACO < PSO
+      values:    GA=2.409  PSO=6.037  ACO=5.718
+      verdict:   CONTRADICTED
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
-      observed:  ACO > GA > PSO
-      values:    GA=3.253  PSO=1.055  ACO=5.278
+      observed:  ACO > PSO > GA
+      values:    GA=3.371  PSO=4.280  ACO=5.278
       verdict:   CONTRADICTED
 
   Maze: Parallel Paths
     time_to_half_entropy (lower = faster collapse)
       predicted: PSO < ACO < GA
       observed:  PSO < GA < ACO
-      values:    PSO=39.206
+      values:    PSO=17.500
       verdict:   PARTIAL (worst matches)
     diversity_floor      (lower = severer collapse)
       predicted: PSO < ACO < GA
       observed:  PSO < GA < ACO
-      values:    GA=4.237  PSO=1.216  ACO=4.476
+      values:    GA=4.237  PSO=1.820  ACO=4.476
       verdict:   PARTIAL (worst matches)
     mean_entropy         (higher = sustained diversity)
       predicted: GA > ACO > PSO
       observed:  GA > ACO > PSO
-      values:    GA=4.237  PSO=1.222  ACO=2.622
+      values:    GA=4.237  PSO=1.226  ACO=2.622
       verdict:   SUPPORTED
 
 --- H2 (Environmental challenge x coupling)  [pop=20] ---
   Shortest Path Trap (deception)  most stresses PSO
     field=floor  predicted-worst=PSO  observed-worst=GA
-    values: GA=0.000  PSO=0.959  ACO=4.053
+    values: GA=0.000  PSO=3.750  ACO=4.053
     verdict: CONTRADICTED (worst=GA)
 
   Sudden Wall (non-stat)    most stresses ACO (adaptation time)
     field=adapt  predicted-worst=ACO  observed-worst=GA
-    values: GA=7.800  PSO=2.222  ACO=1.000
+    values: GA=8.000  PSO=4.600  ACO=1.000
     verdict: CONTRADICTED (worst=GA)
 
   Parallel Paths (multimodality)  most stresses PSO (diversity floor)
     field=floor  predicted-worst=PSO  observed-worst=PSO
-    values: GA=3.334  PSO=0.395  ACO=3.383
+    values: GA=3.334  PSO=1.410  ACO=3.383
     verdict: SUPPORTED
 
 --- H2 (Environmental challenge x coupling)  [pop=50] ---
   Shortest Path Trap (deception)  most stresses PSO
     field=floor  predicted-worst=PSO  observed-worst=GA
-    values: GA=0.078  PSO=1.268  ACO=5.173
+    values: GA=0.072  PSO=5.110  ACO=5.173
     verdict: CONTRADICTED (worst=GA)
 
   Sudden Wall (non-stat)    most stresses ACO (adaptation time)
     field=adapt  predicted-worst=ACO  observed-worst=GA
-    values: GA=25.600  PSO=5.814  ACO=0.600
+    values: GA=6.566  PSO=3.600  ACO=0.600
     verdict: CONTRADICTED (worst=GA)
 
   Parallel Paths (multimodality)  most stresses PSO (diversity floor)
     field=floor  predicted-worst=PSO  observed-worst=PSO
-    values: GA=3.873  PSO=0.637  ACO=3.999
+    values: GA=3.873  PSO=1.556  ACO=3.999
     verdict: SUPPORTED
 
 --- H2 (Environmental challenge x coupling)  [pop=150] ---
   Shortest Path Trap (deception)  most stresses PSO
     field=floor  predicted-worst=PSO  observed-worst=GA
-    values: GA=0.283  PSO=1.348  ACO=6.295
+    values: GA=0.277  PSO=5.997  ACO=6.295
     verdict: CONTRADICTED (worst=GA)
 
   Sudden Wall (non-stat)    most stresses ACO (adaptation time)
     field=adapt  predicted-worst=ACO  observed-worst=GA
-    values: GA=47.938  PSO=1.209  ACO=0.600
+    values: GA=7.374  PSO=5.600  ACO=0.600
     verdict: CONTRADICTED (worst=GA)
 
   Parallel Paths (multimodality)  most stresses PSO (diversity floor)
     field=floor  predicted-worst=PSO  observed-worst=PSO
-    values: GA=4.237  PSO=1.216  ACO=4.476
+    values: GA=4.237  PSO=1.820  ACO=4.476
     verdict: SUPPORTED
 
 --- H3 (Population scale modulates but does not reverse) ---
 Prediction: larger pop amplifies PSO weakness; GA benefits; ACO insensitive.
 
-  GA   Shortest Path Trap  diversity_floor:  pop20=0.000  pop50=0.078  pop150=0.283   trend: INCREASING (scale helps)
-  GA   Sudden Wall      diversity_floor:  pop20=0.753  pop50=1.780  pop150=2.347   trend: INCREASING (scale helps)
+  GA   Shortest Path Trap  diversity_floor:  pop20=0.000  pop50=0.072  pop150=0.277   trend: INCREASING (scale helps)
+  GA   Sudden Wall      diversity_floor:  pop20=0.816  pop50=1.952  pop150=2.409   trend: INCREASING (scale helps)
   GA   Parallel Paths   diversity_floor:  pop20=3.334  pop50=3.873  pop150=4.237   trend: INCREASING (scale helps)
-  PSO  Shortest Path Trap  diversity_floor:  pop20=0.959  pop50=1.268  pop150=1.348   trend: INCREASING (scale helps)
-  PSO  Sudden Wall      diversity_floor:  pop20=0.574  pop50=0.814  pop150=0.948   trend: INCREASING (scale helps)
-  PSO  Parallel Paths   diversity_floor:  pop20=0.395  pop50=0.637  pop150=1.216   trend: INCREASING (scale helps)
+  PSO  Shortest Path Trap  diversity_floor:  pop20=3.750  pop50=5.110  pop150=5.997   trend: INCREASING (scale helps)
+  PSO  Sudden Wall      diversity_floor:  pop20=3.900  pop50=5.071  pop150=6.037   trend: INCREASING (scale helps)
+  PSO  Parallel Paths   diversity_floor:  pop20=1.410  pop50=1.556  pop150=1.820   trend: INCREASING (scale helps)
   ACO  Shortest Path Trap  diversity_floor:  pop20=4.053  pop50=5.173  pop150=6.295   trend: INCREASING (scale helps)
   ACO  Sudden Wall      diversity_floor:  pop20=3.614  pop50=4.763  pop150=5.718   trend: INCREASING (scale helps)
   ACO  Parallel Paths   diversity_floor:  pop20=3.383  pop50=3.999  pop150=4.476   trend: INCREASING (scale helps)
