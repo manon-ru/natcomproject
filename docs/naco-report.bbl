@@ -1,0 +1,46 @@
+\begin{thebibliography}{1}
+
+\bibitem{akka2018}
+Khaled Akka and Farid Khaber.
+\newblock Mobile robot path planning using an improved ant colony optimization.
+\newblock {\em International Journal of Advanced Robotic Systems},
+  15:172988141877467, 05 2018.
+
+\bibitem{ansari2015}
+Ahlam Ansari, Mohd~Amin Sayyed, Khatija Ratlamwala, and Parvin Shaikh.
+\newblock An optimized hybrid approach for path finding.
+\newblock {\em ArXiv}, abs/1504.02281, 2015.
+
+\bibitem{benhlima2018}
+Said Benhlima, Lamini Chaymaa, and Ali Bekri.
+\newblock Genetic algorithm based approach for autonomous mobile robot path
+  planning.
+\newblock {\em Procedia Computer Science}, 127, 03 2018.
+
+\bibitem{masisi2008}
+Lesedi Masisi, Fulufhelo Nelwamondo, and Tshilidzi Marwala.
+\newblock The use of entropy to measure structural diversity.
+\newblock {\em CoRR}, abs/0810.3525, 12 2008.
+
+\bibitem{shrestha2024}
+Praveen Reddy Kota Alaa~Sheta Santosh~Shrestha, Pranith Varma~Appani.
+\newblock Optimizing robot path planning in 2d static environments using ga,
+  pso and aco search algorithms.
+\newblock {\em International Journal of Computer Applications}, 186(7):1--10,
+  Feb 2024.
+
+\bibitem{sariff2009}
+Nohaidda~Binti Sariff and Norlida Buniyamin.
+\newblock Comparative study of genetic algorithm and ant colony optimization
+  algorithm performances for robot path planning in global static environments
+  of different complexities.
+\newblock In {\em 2009 IEEE International Symposium on Computational
+  Intelligence in Robotics and Automation - (CIRA)}, pages 132--137, 2009.
+
+\bibitem{tu2003}
+Jianping Tu and S.X. Yang.
+\newblock Genetic algorithm based path planning for a mobile robot.
+\newblock In {\em 2003 IEEE International Conference on Robotics and Automation
+  (Cat. No.03CH37422)}, volume~1, pages 1221--1226 vol.1, 2003.
+
+\end{thebibliography}

@@ -17,6 +17,15 @@ matplotlib.use("Agg")   # non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Larger fonts so axes/labels stay readable when figures are shrunk in the report.
+plt.rcParams.update({
+    "font.size": 15,
+    "axes.labelsize": 16,
+    "xtick.labelsize": 14,
+    "ytick.labelsize": 14,
+    "legend.fontsize": 14,
+})
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from config import MAZE_TYPES, POPULATION_SIZES, ENTROPY_SAMPLE_INTERVAL
 
@@ -113,7 +122,7 @@ def figure_entropy_curves(rows: list, out_dir: str) -> None:
 
     for maze in maze_types:
         for pop in pop_sizes:
-            fig, ax = plt.subplots(figsize=(9, 5))
+            fig, ax = plt.subplots(figsize=(6.5, 5))
             has_data = False
 
             for algo in ALGORITHMS:
@@ -148,15 +157,14 @@ def figure_entropy_curves(rows: list, out_dir: str) -> None:
 
             ax.set_xlabel("Iteration")
             ax.set_ylabel("Shannon Entropy (bits)")
-            ax.set_title(f"Population Diversity — {maze} (pop={pop})")
-            ax.legend(fontsize=9)
+            ax.legend()
             ax.grid(True, alpha=0.3)
             ax.spines[["top", "right"]].set_visible(False)
 
             slug = MAZE_SLUGS.get(maze, maze.lower().replace(" ", "_"))
             fname = os.path.join(out_dir, f"entropy_{slug}_pop{pop}.png")
             plt.tight_layout()
-            plt.savefig(fname, dpi=100)
+            plt.savefig(fname, dpi=150)
             plt.close(fig)
             if has_data:
                 print(f"  Saved {fname}")
@@ -170,7 +178,7 @@ def figure_success_rate(rows: list, out_dir: str) -> None:
     pop_sizes = sorted(set(r["pop_size"] for r in rows if r["pop_size"] is not None))
 
     for maze in maze_types:
-        fig, ax = plt.subplots(figsize=(9, 5))
+        fig, ax = plt.subplots(figsize=(6.5, 5))
         x = np.arange(len(pop_sizes))
         width = 0.25
         offsets = [-width, 0, width]
@@ -188,19 +196,18 @@ def figure_success_rate(rows: list, out_dir: str) -> None:
 
         ax.set_xlabel("Population Size")
         ax.set_ylabel("Success Rate")
-        ax.set_title(f"Success Rate — {maze}")
         ax.set_xticks(x)
         ax.set_xticklabels([str(p) for p in pop_sizes])
         ax.set_ylim(0, 1.05)
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
-        ax.legend(fontsize=9)
+        ax.legend()
         ax.grid(True, axis="y", alpha=0.3)
         ax.spines[["top", "right"]].set_visible(False)
 
         slug = MAZE_SLUGS.get(maze, maze.lower().replace(" ", "_"))
         fname = os.path.join(out_dir, f"success_rate_{slug}.png")
         plt.tight_layout()
-        plt.savefig(fname, dpi=100)
+        plt.savefig(fname, dpi=150)
         plt.close(fig)
         print(f"  Saved {fname}")
 
@@ -227,28 +234,19 @@ def figure_adaptation_time(rows: list, out_dir: str) -> None:
             vals = [r["adaptation_time"] for r in cell if r["adaptation_time"] is not None]
             means.append(_mean(vals))
         bar_vals = [v if v is not None else 0 for v in means]
-        bars = ax.bar(x + offsets[i], bar_vals, width, label=f"pop={pop}", alpha=0.85)
-        # Annotate n_valid
-        for j, (bar, algo) in enumerate(zip(bars, ALGORITHMS)):
-            cell = _filter(sw_rows, pop_size=pop, algo=algo)
-            n_valid = sum(1 for r in cell if r["adaptation_time"] is not None)
-            n_total = len(cell)
-            if n_total > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
-                        f"n={n_valid}/{n_total}", ha="center", va="bottom", fontsize=7)
+        ax.bar(x + offsets[i], bar_vals, width, label=f"pop={pop}", alpha=0.85)
 
     ax.set_xlabel("Algorithm")
     ax.set_ylabel("Adaptation Time (iterations)")
-    ax.set_title("Adaptation Time after Disruption — Sudden Wall")
     ax.set_xticks(x)
     ax.set_xticklabels(ALGORITHMS)
-    ax.legend(fontsize=9)
+    ax.legend()
     ax.grid(True, axis="y", alpha=0.3)
     ax.spines[["top", "right"]].set_visible(False)
 
     fname = os.path.join(out_dir, "adaptation_time_sudden_wall.png")
     plt.tight_layout()
-    plt.savefig(fname, dpi=100)
+    plt.savefig(fname, dpi=150)
     plt.close(fig)
     print(f"  Saved {fname}")
 
