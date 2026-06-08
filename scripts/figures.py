@@ -200,14 +200,14 @@ def figure_success_rate(rows: list, out_dir: str) -> None:
         ax.set_xticklabels([str(p) for p in pop_sizes])
         ax.set_ylim(0, 1.05)
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
-        ax.legend()
+        ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False)
         ax.grid(True, axis="y", alpha=0.3)
         ax.spines[["top", "right"]].set_visible(False)
 
         slug = MAZE_SLUGS.get(maze, maze.lower().replace(" ", "_"))
         fname = os.path.join(out_dir, f"success_rate_{slug}.png")
         plt.tight_layout()
-        plt.savefig(fname, dpi=150)
+        plt.savefig(fname, dpi=150, bbox_inches="tight")
         plt.close(fig)
         print(f"  Saved {fname}")
 
